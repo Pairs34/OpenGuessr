@@ -27,11 +27,13 @@ except ImportError:
 BEARER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOm51bGwsInVzZXJJZCI6MjczMDYzOSwiaWF0IjoxNzc4MzI4ODc2LCJleHAiOjE3ODA5MjA4NzZ9.XgSAG0_stFWbVFpjChdihSedo-G9c_ftOBVKaRLRUZ4"
 USER_ID      = "2730639"
 
-THREADS      = 12
+THREADS      = 1
 DELAY_MIN    = 1.0
 DELAY_MAX    = 2.5
 XP_PER_REQ   = 7500
 TOTAL_REQS   = 0          # 0 = sınırsız
+VERIFY_IP    = True       # Her istek öncesi exit IP'yi doğrula (api.ipify.org)
+IP_CHECK_URL = "https://api.ipify.org?format=text"
 
 # curl_cffi impersonation profili. chrome120/124/131 hepsi olur; Postman'in geçtiği
 # header setiyle birlikte chrome131 güvenli seçim.
@@ -45,7 +47,20 @@ PROXY_PORT = 823
 PROXY_USER = "f813aec369301b2ce7b8__cr.tr"
 PROXY_PASS = "12b990779269baa4"
 
-PROXY_URL = f"http://{PROXY_USER}:{PROXY_PASS}@{PROXY_HOST}:{PROXY_PORT}"
+# Her yeni session için rastgele sticky-session ID üretir → DataImpulse her
+# yeni session'da farklı bir exit IP verir. Aynı sid ile tekrar bağlanırsan
+# (kısa süre içinde) aynı IP'ye düşersin; farklı sid → farklı IP.
+def build_proxy_url(sid: str | None = None) -> str:
+    user = PROXY_USER
+    if sid:
+        user = f"{PROXY_USER}__sid.{sid}"
+    return f"http://{user}:{PROXY_PASS}@{PROXY_HOST}:{PROXY_PORT}"
+
+def new_sid() -> str:
+    # 10 hex karakter; çakışma pratikte yok
+    return f"{random.getrandbits(40):010x}"
+
+PROXY_URL = build_proxy_url()
 PROXIES   = {"http": PROXY_URL, "https": PROXY_URL}
 
 # ─── ENDPOINT ──────────────────────────────────────────────────────────────
@@ -79,10 +94,14 @@ stats = {"ok": 0, "fail": 0, "xp": 0, "start": time.time()}
 stop_event = threading.Event()
 
 
-def make_session(use_proxy: bool = True) -> "cffi_requests.Session":
+def make_session(use_proxy: bool = True, sid: str | None = None) -> "cffi_requests.Session":
     s = cffi_requests.Session(impersonate=IMPERSONATE)
     if use_proxy:
-        s.proxies.update(PROXIES)
+        # sid verilmezse her session için yeni rastgele sid → yeni IP
+        if sid is None:
+            sid = new_sid()
+        url = build_proxy_url(sid)
+        s.proxies.update({"http": url, "https": url})
     return s
 
 
@@ -118,11 +137,23 @@ def preflight(use_proxy: bool) -> tuple[bool, int]:
 def worker(worker_id: int):
     headers = build_headers()
     payload = json.dumps({"id": str(USER_ID), "experience": XP_PER_REQ})
-    session = make_session(use_proxy=True)
+    # Her istekte yeni session/IP istediğin için tek bir kalıcı session yok.
     consecutive_cf = 0
+    last_ip = None
 
     while not stop_event.is_set():
+        # Her iterasyon = yeni session = yeni rastgele sid = yeni exit IP
+        session = make_session(use_proxy=True)
         try:
+            if VERIFY_IP:
+                try:
+                    ip = session.get(IP_CHECK_URL, timeout=15).text.strip()
+                except Exception as e:
+                    ip = f"?({e.__class__.__name__})"
+                tag = "→ yeni IP" if ip != last_ip else "⚠ aynı IP!"
+                print(f"[T{worker_id}] IP: {ip:<16} {tag}")
+                last_ip = ip
+
             r = session.put(API_URL, headers=headers, data=payload, timeout=30)
             sc = r.status_code
 
@@ -141,9 +172,6 @@ def worker(worker_id: int):
                 if "Just a moment" in txt or "<html" in txt.lower():
                     consecutive_cf += 1
                     print(f"[T{worker_id}] ⚠ Cloudflare challenge — IP rotate ({consecutive_cf})")
-                    try: session.close()
-                    except Exception: pass
-                    session = make_session(use_proxy=True)
                     time.sleep(min(consecutive_cf, 5))
                     continue
                 else:
@@ -164,11 +192,11 @@ def worker(worker_id: int):
             with stats_lock:
                 stats["fail"] += 1
             print(f"[T{worker_id}] ⚠ {e.__class__.__name__}: {e}")
-            try: session.close()
-            except Exception: pass
-            session = make_session(use_proxy=True)
             time.sleep(2)
             continue
+        finally:
+            try: session.close()
+            except Exception: pass
 
         time.sleep(random.uniform(DELAY_MIN, DELAY_MAX))
 
