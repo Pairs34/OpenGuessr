@@ -1,0 +1,211 @@
+<html lang="en"><head>
+	<meta charset="utf-8">
+	<link rel="icon" href="https://openguessr.com/favicon.ico">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<meta name="description" content="Free GeoGuessr alternative with unlimited playtime and multiplayer. Play GeoGuessr free of charge and learn geography by guessing where you are!">
+
+	<!-- favicons -->
+	<link rel="icon" type="image/svg+xml" href="https://openguessr.com/img/favicon.svg">
+	<link rel="icon" type="image/png" sizes="48x48" href="https://openguessr.com/img/favicon-48x48.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="https://openguessr.com/img/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="https://openguessr.com/img/favicon-16x16.png">
+	<link rel="icon" href="https://openguessr.com/favicon.ico">
+
+	<!-- manifest and large icons -->
+	<link rel="manifest" href="/img/site.webmanifest">
+	<link rel="apple-touch-icon" sizes="180x180" href="https://openguessr.com/img/apple-touch-icon.png">
+
+	<!-- colors -->
+	<meta name="theme-color" content="#07071e">
+	<meta name="msapplication-TileColor" content="#da532c">
+
+	<!-- structured data -->
+	<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "WebSite",
+			"name": "OpenGuessr - Free GeoGuessr Alternative",
+			"alternateName": "OpenGuessr",
+			"url": "https://openguessr.com"
+		}
+	</script>
+
+	<link href="/_app/immutable/entry/start.BWufZB6x.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/D9r2-LZB.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BUoIQkVY.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BySrnqd7.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DuPSUBhw.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.BuszlicR.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/C1FmrZbK.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CWj6FrbW.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CJMvIweO.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CGjq_Trv.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BgCb9kf6.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CIra8r84.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/PBaAgoRj.js" rel="modulepreload">
+		
+<style>
+        #og-card {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 2147483647;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            background: #0f0f1a;
+            border: 1px solid #4285f4;
+            border-radius: 14px;
+            padding: 14px 16px;
+            min-width: 220px;
+            box-shadow: 0 6px 28px rgba(66,133,244,0.35);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #fff;
+            animation: og-in 0.3s cubic-bezier(.2,.8,.4,1) both;
+            user-select: none;
+        }
+        @keyframes og-in {
+            from { opacity: 0; transform: translateY(16px) scale(.97); }
+            to   { opacity: 1; transform: translateY(0)   scale(1);    }
+        }
+        #og-card.og-refresh {
+            animation: none;
+        }
+        #og-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+        }
+        #og-header:active {
+            cursor: grabbing;
+        }
+        #og-title {
+            font-size: 12px;
+            color: #9ab4f0;
+            font-weight: 600;
+            letter-spacing: .4px;
+            text-transform: uppercase;
+        }
+        #og-close {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            padding: 0 2px;
+            transition: color .15s;
+        }
+        #og-close:hover { color: #f44; }
+        #og-coords {
+            font-size: 11px;
+            color: #788;
+            font-family: 'Consolas', monospace;
+        }
+        #og-open {
+            background: #4285f4;
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            padding: 9px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            transition: background .15s, transform .1s;
+        }
+        #og-open:hover  { background: #3367d6; transform: scale(1.02); }
+        #og-open:active { transform: scale(.98); }
+        #og-auto-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-top: 1px solid #1e2240;
+            padding-top: 10px;
+            margin-top: 2px;
+        }
+        #og-auto-toggle {
+            appearance: none;
+            width: 34px;
+            height: 18px;
+            background: #2a2a45;
+            border-radius: 9px;
+            position: relative;
+            cursor: pointer;
+            transition: background .2s;
+            flex-shrink: 0;
+            border: 1px solid #4285f4;
+        }
+        #og-auto-toggle:checked {
+            background: #4285f4;
+        }
+        #og-auto-toggle::after {
+            content: '';
+            position: absolute;
+            width: 12px; height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px; left: 2px;
+            transition: left .2s;
+        }
+        #og-auto-toggle:checked::after {
+            left: 18px;
+        }
+        #og-auto-label {
+            font-size: 12px;
+            color: #9ab4f0;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+        }
+        #og-auto-status {
+            font-size: 10px;
+            color: #56d364;
+            font-family: 'Consolas', monospace;
+            min-height: 14px;
+        }
+    </style><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/nodes/0.C0YYhr5_.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CeZg7kyx.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DaE_C2xo.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/BX2rTw2C.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/MoIPr4kY.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/0.Bw8h3zG1.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/nodes/1.CqvNqPzG.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/LfncBhtI.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CoDzHNFv.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/ZdFMRG2V.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/1.jZkncvd3.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/nodes/2.B85xOMAd.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/B-Nx0scy.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/HYEmmcBZ.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/C5K6THNa.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DJM_6NqN.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/C_9U4AEM.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CsRSOAvp.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/Dh4YX3z6.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CNhbN-7J.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/BzIfRh_T.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DPpz8V-P.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CKjKX_Ui.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DXCCdTqO.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/Popup.B5ffdXHh.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CNzD5LD5.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/Tabs.CwE2oFZX.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/B0Z5MIwO.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/D7J_D-Vr.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/BKWdARrq.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/-BYQzXCc.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/Chip.B0XsXABI.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/BM4eoBTa.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/DuelDivisionDisplay.DuTaHipZ.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/B2fDw-X_.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CfmF12Ks.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DDsxt8Ls.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/BnET9lUh.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/B3aHwtsY.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/PinHolder.FNopCEU2.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/KaKhpZVK.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/D5IHDR9V.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/SSqn7iKY.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/D1JavWn8.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/SvgMap.gZGOZcgF.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/C7RRGFwf.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DpXtgla6.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/Notification.C6T3PROt.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CgpUZwF-.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/2.eOCLHdmH.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/nodes/4.GVp-uDwV.js"><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer=""></script><!----><script src="https://cdn.fuseplatform.net/publift/tags/2/4180/fuse.js" async=""></script> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"> <link rel="stylesheet" href="https://sdk.playlight.dev/playlight-sdk.css"><script src="https://www.googletagmanager.com/gtag/js?id=G-DXD64B7ZDX" async=""></script><!----><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/-XkcyHKR.js"><title>OpenGuessr - Free GeoGuessr Alternative</title></head>
+
+<body data-sveltekit-preload-data="hover">
+	<div style="display: contents">
+			<script>
+				{
+					__sveltekit_1brawc6 = {
+						base: ""
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("/_app/immutable/entry/start.BWufZB6x.js"),
+						import("/_app/immutable/entry/app.BuszlicR.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element);
+					});
+				}
+			</script>
+		<!----><!----><!----><!----><!----><h1 style="display: none;">Free GeoGuessr alternative with unlimited playtime and multiplayer. Play GeoGuessr free of charge and learn geography
+	by guessing where you are!</h1> <h2 style="display: none;">OpenGuessr is like GeoGuessr, but free and unlimited, enabling you to guess the location without a subscription
+	(kostenlos, gratis). The game includes online multiplayer to play with friends, is unblocked, partially open-source,
+	and uses Google Street View. Can you guess the country, or even guess where you are? Travel across the world map today
+	and become the next Rainbolt.</h2> <!----> <!----> <div class="logo svelte-8ie7t1"><img class="image svelte-8ie7t1" src="/img/openguessr.svg" alt="OpenGuessr logo - the free geography location-guessing game"></div><!----> <nav class="menu-button-area barMenu svelte-yic9pk"><!----> <button class="standardButton white menu-button svelte-yic9pk" aria-label="Menu"><span class="menu-span svelte-yic9pk">Menu</span> <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-ellipsis-vertical"><!----><circle cx="12" cy="12" r="1"></circle><!----><circle cx="12" cy="5" r="1"></circle><!----><circle cx="12" cy="19" r="1"></circle><!----><!----></svg><!----></button></nav> <!----> <!----><!----> <div class="notification-holder svelte-6rhnmd" style="top: var(--box-margin);"><!----></div><!----> <!----> <!----><div class="loadingOverlay svelte-1qpkoic"><img src="/img/compass_spinner.png" fetchpriority="high" alt="Loading new streetview" class="spinner"></div><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----><!----> <div style="display: none;"></div><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><div class="confettiBox svelte-1mr706v"><!----><!----><!----><!----></div><!----> <!----><!----><!----> <!----><!----><!----> <div class="endBottomArea svelte-1mr706v" style=""><div class="endBottomBar svelte-1mr706v"><div class="resultAdArea barMenu svelte-1mr706v"><div class="resultAd svelte-1mr706v" id="resultAd" data-fuse="Game_Result_incontent_1"></div> <p class="noAdvertsText svelte-1mr706v">Purchase a supporter tier to go ad-free.</p></div> <div id="resultBox" class="barMenu svelte-1mr706v"><div id="motivationText" class="resultField svelte-1mr706v resultFieldHigh"><p class="svelte-1mr706v">Impressive.</p></div> <div class="mobileResultAdArea resultField resultFieldHigh svelte-1mr706v"><div class="mobileResultAd svelte-1mr706v" id="mobileResultAd" data-fuse="Game_Result_Mob_Only"></div> <p class="noAdvertsText svelte-1mr706v">Ad.</p></div> <div class="resultField svelte-1mr706v"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-ruler-dimension-line distance-icon" style="margin-right: var(--panel-margin);"><!----><path d="M10 15v-3"></path><!----><path d="M14 15v-3"></path><!----><path d="M18 15v-3"></path><!----><path d="M2 8V4"></path><!----><path d="M22 6H2"></path><!----><path d="M22 8V4"></path><!----><path d="M6 15v-3"></path><!----><rect x="2" y="12" width="20" height="8" rx="2"></rect><!----><!----></svg><!----> <p id="distanceText" class="svelte-1mr706v">0 m</p></div> <div id="experienceArea" class="resultField svelte-1mr706v"><div id="supporterBoost" class="svelte-1mr706v"><p id="supporterBoostText" class="svelte-1mr706v">Supporter Boost (Default)</p></div> <p id="endScreenLevelDisplay" class="svelte-1mr706v">Lvl. 17</p> <div id="experienceBarContainer" class="svelte-1mr706v"><div class="experienceBarResource svelte-1mr706v experienceBarTransition experienceBarAnimation" style="width: 55.5323%;"></div></div> <p id="experienceNumberText" class="svelte-1mr706v">7500 XP</p> <div id="streakDisplay" class="svelte-1mr706v"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-flame" style="margin-right: var(--content-margin);"><!----><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"></path><!----><!----></svg><!----> <p id="endScreenStreakText" class="svelte-1mr706v">28 (1.5x)</p></div><!----></div><!----><!----></div></div> <div class="barMenu nextRoundArea svelte-1mr706v"><button class="standardButton white svelte-1mr706v"><img src="/img/streetview_icon.png" alt="Streetview symbol" class="socialIcon svelte-1mr706v" id="streetviewIcon"></button> <button id="nextRound" class="standardButton white svelte-1mr706v"><p class="nextRoundText svelte-1mr706v">Continue</p> <img src="/img/arrow_icon.png" alt="Arrow" class="directionArrowIcon svelte-1mr706v"></button></div><!----></div><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <iframe id="panorama-iframe" referrerpolicy="no-referrer-when-downgrade" frameborder="0" class="svelte-1iva1yp" src="https://www.google.com/maps/embed/v1/streetview?location=50.328687900214945,19.02037168408159&amp;key=AIzaSyAHt3QJRBDISRaWaqblQl2VwjWiHvjpgIs&amp;fov=90&amp;heading=305.1198&amp;language=en" style="filter: none;"></iframe><!----> <!----><!----> <div id="map-holder" class="regular-map-size map-holder svelte-nls3wc map-holder-ad-shift map-holder-to-result"><!----><!----><!----> <div class="toggle-container svelte-crvia7"><!----></div><!----> <div id="map" role="region" tabindex="0" class="svelte-13da2aa leaflet-container leaflet-touch leaflet-retina leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom map-full-opacity-result" style="max-height: 100%; position: relative;"><!----><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(513px, 490px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 16; transform: translate3d(-1913px, -1509px, 0px) scale(16);"></div><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 20; transform: translate3d(-46px, -36px, 0px) scale(1);"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579688&amp;y=354124&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-43px, -1px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579689&amp;y=354124&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(213px, -1px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579688&amp;y=354123&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-43px, -257px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579689&amp;y=354123&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(213px, -257px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579688&amp;y=354125&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-43px, 255px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579689&amp;y=354125&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(213px, 255px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579687&amp;y=354124&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-299px, -1px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579690&amp;y=354124&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(469px, -1px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579687&amp;y=354123&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-299px, -257px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579690&amp;y=354123&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(469px, -257px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579687&amp;y=354125&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-299px, 255px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579690&amp;y=354125&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(469px, 255px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579688&amp;y=354122&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-43px, -513px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579689&amp;y=354122&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(213px, -513px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579688&amp;y=354126&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-43px, 511px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579689&amp;y=354126&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(213px, 511px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579687&amp;y=354122&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-299px, -513px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579690&amp;y=354122&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(469px, -513px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579686&amp;y=354124&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-555px, -1px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579691&amp;y=354124&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(725px, -1px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579687&amp;y=354126&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-299px, 511px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579690&amp;y=354126&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(469px, 511px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579686&amp;y=354123&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-555px, -257px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579691&amp;y=354123&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(725px, -257px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579686&amp;y=354125&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-555px, 255px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579691&amp;y=354125&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(725px, 255px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579688&amp;y=354121&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-43px, -769px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579689&amp;y=354121&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(213px, -769px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579688&amp;y=354127&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-43px, 767px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579689&amp;y=354127&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(213px, 767px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579686&amp;y=354122&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-555px, -513px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579691&amp;y=354122&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(725px, -513px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579686&amp;y=354126&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-555px, 511px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579691&amp;y=354126&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(725px, 511px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579687&amp;y=354121&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-299px, -769px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579690&amp;y=354121&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(469px, -769px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579687&amp;y=354127&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-299px, 767px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579690&amp;y=354127&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(469px, 767px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579685&amp;y=354124&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-811px, -1px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579692&amp;y=354124&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(981px, -1px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579685&amp;y=354123&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-811px, -257px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579692&amp;y=354123&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(981px, -257px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579685&amp;y=354125&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-811px, 255px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579692&amp;y=354125&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(981px, 255px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579686&amp;y=354121&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-555px, -769px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579691&amp;y=354121&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(725px, -769px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579686&amp;y=354127&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-555px, 767px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579691&amp;y=354127&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(725px, 767px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579685&amp;y=354122&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-811px, -513px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579692&amp;y=354122&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(981px, -513px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579685&amp;y=354126&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-811px, 511px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579692&amp;y=354126&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(981px, 511px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=579685&amp;y=354121&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-811px, -769px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=579692&amp;y=354121&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(981px, -769px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=579685&amp;y=354127&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-811px, 767px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=579692&amp;y=354127&amp;z=20&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(981px, 767px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><svg pointer-events="none" class="leaflet-zoom-animated" width="1538" height="1418" viewBox="-641 -608 1538 1418" style="transform: translate3d(-641px, -608px, 0px);"><g><path class="leaflet-interactive" stroke="black" stroke-opacity="0.75" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M128 101L128 101"></path></g></svg></div><div class="leaflet-pane leaflet-shadow-pane"></div><div class="leaflet-pane leaflet-marker-pane"><img src="/img/pins/player_pin0.png" class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" alt="Marker" tabindex="0" role="button" style="margin-left: -17.5px; margin-top: -34px; width: 35px; height: 35px; transform: translate3d(128px, 101px, 0px); z-index: 101;"><img src="/img/pins/result_pin.png" class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" alt="Marker" tabindex="0" role="button" style="margin-left: -17.5px; margin-top: -34px; width: 35px; height: 35px; transform: translate3d(128px, 101px, 0px); z-index: 101;"></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(1.484e+08px, 9.06559e+07px, 0px) scale(524288);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"><div class="leaflet-control-layers leaflet-control" aria-haspopup="true"><a class="leaflet-control-layers-toggle" href="#" title="Layers" role="button"></a><section class="leaflet-control-layers-list"><div class="leaflet-control-layers-base"><label><span><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers_30" checked="checked"><span> Standard</span></span></label><label><span><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers_30"><span> Terrain</span></span></label><label><span><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers_30"><span> Satellite</span></span></label></div><div class="leaflet-control-layers-separator" style="display: none;"></div><div class="leaflet-control-layers-overlays"></div></section></div></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"><div class="leaflet-control-attribution leaflet-control"><a href="https://leafletjs.com" title="A JavaScript library for interactive maps"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag"><path fill="#4C7BE1" d="M0 0h12v4H0z"></path><path fill="#FFD500" d="M0 4h12v3H0z"></path><path fill="#E0BC00" d="M0 7h12v1H0z"></path></svg> Leaflet</a></div></div></div></div><!----> <!----><!----><!----></div><!----> <!----><!----> <div id="bottomBar" class="bottomBar svelte-1e81imw"><div class="bottomLeftMenu svelte-1e81imw"><div class="barMenu"><button class="standardButton white"><img id="resetButtonImg" src="/img/return_icon.png" alt="Return to start position" class="svelte-1e81imw"> <span class="resetButtonText svelte-1e81imw">Return</span></button> <!----></div></div> <div class="barMenu bottomRightMenu svelte-1e81imw"><div id="confirmButton" class="standardButton confirmButton white svelte-1e81imw"><button class="helpButton standardButton white svelte-1e81imw">?</button> <p id="guessText" class="svelte-1e81imw">Guess<!----></p></div></div><!----></div> <div class="gameplayAdArea barMenu svelte-1e81imw"><div class="gameplayAd svelte-1e81imw" id="gameplayAd" data-fuse="Game_incontent_1"></div> <p class="noAdvertsText svelte-1e81imw">Ads keep OpenGuessr free.</p></div><!----> <!----><!----><!----><!----> <!----><!----> <div id="svelte-announcer" aria-live="assertive" aria-atomic="true" style="position: absolute; left: 0; top: 0; clip: rect(0 0 0 0); clip-path: inset(50%); overflow: hidden; white-space: nowrap; width: 1px; height: 1px"><!----></div><!----></div>
+<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;a6010c1acb25489aa2d52614f4879b85&quot;,&quot;server_timing&quot;:{&quot;name&quot;:{&quot;cfCacheStatus&quot;:true,&quot;cfEdge&quot;:true,&quot;cfExtPri&quot;:true,&quot;cfL4&quot;:true,&quot;cfOrigin&quot;:true,&quot;cfSpeedBrain&quot;:true},&quot;location_startswith&quot;:null}}" crossorigin="anonymous"></script>
+
+
+<div id="og-card" style="display: flex; inset: 795.6px auto auto 134px;">
+            <div id="og-header">
+                <span id="og-title">📍 Konum tespit edildi</span>
+                <button id="og-close" title="Kapat">✕</button>
+            </div>
+            <div id="og-coords">50.3286879,  19.0203717</div>
+            <button id="og-open">🗺️ Google Maps'te Aç</button>
+            <div id="og-auto-row">
+                <input type="checkbox" id="og-auto-toggle">
+                <label id="og-auto-label" for="og-auto-toggle">🤖 Oto-Oyun</label>
+            </div>
+            <div id="og-auto-status">⏳ Sonuç bekleniyor…</div>
+        </div><div id="playlight-sdk-container" class="playlight-sdk playlight-sdk-container"><!----><!----> <!----><!----> <!----><!----> <!----></div><protonpass-root-e03c data-protonpass-role="root" data-protonpass-theme="os"></protonpass-root-e03c><div popover="" role="tooltip" style="transform: scale(0); opacity: 0; filter: blur(15px); transition: transform 150ms, opacity 150ms, filter 150ms; left: 931.688px; top: 1011.4px;">How to play<div class="tooltip-arrow" style="left: 50px; bottom: -6px;" data-placement="top"></div></div></body><chatgpt-sidebar data-rendered="true" data-gpts-theme="light"></chatgpt-sidebar></html>
