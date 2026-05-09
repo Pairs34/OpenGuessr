@@ -1,0 +1,19 @@
+{
+    "manifest_version": 3,
+    "name": "OpenGuessr Maps",
+    "version": "1.0",
+    "description": "OpenGuessr'daki Street View konumunu Google Maps'te pinli olarak açar.",
+    "content_scripts": [
+        {
+            "matches": ["https://openguessr.com/*"],
+            "js": ["map-main.js"],
+            "run_at": "document_start",
+            "world": "MAIN"
+        },
+        {
+            "matches": ["https://openguessr.com/*"],
+            "js": ["ui.js", "interceptor.js"],
+            "run_at": "document_idle"
+        }
+    ]
+}
