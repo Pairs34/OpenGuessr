@@ -3,11 +3,6 @@ proxy_xpfarm.py
 ================
 OpenGuessr add-experience endpoint'ine DataImpulse residential proxy üzerinden
 çoklu thread + curl_cffi (Chrome TLS fingerprint impersonation) ile XP farm yapar.
-
-Kurulum:
-    pip install curl_cffi
-
-Postman'le aynı header setini birebir gönderir; Cloudflare'i geçer.
 """
 
 import json
@@ -15,22 +10,36 @@ import random
 import sys
 import threading
 import time
+from collections import deque
 from concurrent.futures import ThreadPoolExecutor
+from datetime import timedelta
 
 try:
     from curl_cffi import requests as cffi_requests
 except ImportError:
-    print("❌ curl_cffi yüklü değil.  pip install curl_cffi")
+    print("curl_cffi yüklü değil.  pip install curl_cffi")
     sys.exit(1)
+
+from rich.console import Console
+from rich.layout import Layout
+from rich.live import Live
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
+
+console = Console()
+LOG_MAX = 18  # log panelinde görünecek max satır
+log_lines: deque[Text] = deque(maxlen=LOG_MAX)
+log_lock = threading.Lock()
 
 # ─── KULLANICI AYARLARI ────────────────────────────────────────────────────
 BEARER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOm51bGwsInVzZXJJZCI6MjczMDYzOSwiaWF0IjoxNzc4MzI4ODc2LCJleHAiOjE3ODA5MjA4NzZ9.XgSAG0_stFWbVFpjChdihSedo-G9c_ftOBVKaRLRUZ4"
 USER_ID      = "2730639"
 
 THREADS      = 1
-DELAY_MIN    = 1.0
-DELAY_MAX    = 2.5
-XP_PER_REQ   = 7500
+DELAY_MIN    = 4.0
+DELAY_MAX    = 7.0
+XP_PER_REQ   = 10000
 TOTAL_REQS   = 0          # 0 = sınırsız
 VERIFY_IP    = True       # Her istek öncesi exit IP'yi doğrula (api.ipify.org)
 IP_CHECK_URL = "https://api.ipify.org?format=text"
@@ -90,7 +99,7 @@ def build_headers() -> dict:
 
 # ─── İSTATİSTİK ────────────────────────────────────────────────────────────
 stats_lock = threading.Lock()
-stats = {"ok": 0, "fail": 0, "xp": 0, "start": time.time()}
+stats = {"ok": 0, "fail": 0, "xp": 0, "start": time.time(), "profile_xp": None}
 stop_event = threading.Event()
 
 
@@ -105,44 +114,89 @@ def make_session(use_proxy: bool = True, sid: str | None = None) -> "cffi_reques
     return s
 
 
-def fetch_profile_xp(use_proxy: bool = False) -> int | None:
+def fetch_profile_xp() -> int | None:
     headers = build_headers()
     try:
-        with make_session(use_proxy=use_proxy) as s:
+        with make_session(use_proxy=False) as s:
             r = s.get(PROFILE_URL.format(uid=USER_ID), headers=headers, timeout=25)
         if r.status_code == 200:
             return r.json().get("experience")
-        print(f"   profile HTTP {r.status_code}: {r.text[:120]}")
-    except Exception as e:
-        print(f"   profile error: {e.__class__.__name__}: {e}")
+    except Exception:
+        pass
     return None
 
 
-def preflight(use_proxy: bool) -> tuple[bool, int]:
-    headers = build_headers()
-    payload = json.dumps({"id": str(USER_ID), "experience": 1})
-    try:
-        with make_session(use_proxy=use_proxy) as s:
-            r = s.put(API_URL, headers=headers, data=payload, timeout=25)
-    except Exception as e:
-        print(f"⚠ Preflight network hatası ({'proxy' if use_proxy else 'direct'}): "
-              f"{e.__class__.__name__}: {e}")
-        return False, 0
-    body = r.text[:160].replace("\n", " ")
-    label = "proxyli" if use_proxy else "proxysiz"
-    print(f"🔎 Preflight ({label}) PUT → HTTP {r.status_code}  {body}")
-    return r.status_code == 200, r.status_code
+def add_log(text: Text) -> None:
+    with log_lock:
+        log_lines.append(text)
 
 
-def worker(worker_id: int):
+def build_ui(initial_xp: int | None) -> Layout:
+    with stats_lock:
+        ok        = stats["ok"]
+        fail      = stats["fail"]
+        xp_earned = stats["xp"]
+        profile   = stats["profile_xp"]
+        elapsed   = time.time() - stats["start"]
+
+    td = timedelta(seconds=int(elapsed))
+    rate = ok / elapsed if elapsed > 0 else 0.0
+
+    # ── Sol panel: istatistikler ──
+    tbl = Table.grid(padding=(0, 2))
+    tbl.add_column(style="bold cyan", justify="right")
+    tbl.add_column(style="white")
+
+    start_xp_str = f"{initial_xp:,}" if initial_xp is not None else "—"
+    profile_str  = f"{profile:,}"    if profile   is not None else "—"
+    gained_str   = (f"+{profile - initial_xp:,}" if (profile and initial_xp) else
+                    f"+{xp_earned:,} (tahmini)")
+
+    tbl.add_row("Proxy",       f"{PROXY_HOST}:{PROXY_PORT}")
+    tbl.add_row("Kullanıcı",   USER_ID)
+    tbl.add_row("XP/istek",    f"{XP_PER_REQ:,}")
+    tbl.add_row("Bekleme",     f"{DELAY_MIN}–{DELAY_MAX} sn")
+    tbl.add_row("",            "")
+    tbl.add_row("Başarılı",    f"[green]{ok}[/green]")
+    tbl.add_row("Hatalı",      f"[red]{fail}[/red]" if fail else "0")
+    tbl.add_row("",            "")
+    tbl.add_row("Başlangıç XP", start_xp_str)
+    tbl.add_row("Profil XP",   f"[bold yellow]{profile_str}[/bold yellow]")
+    tbl.add_row("Kazanılan",   f"[bold green]{gained_str}[/bold green]")
+    tbl.add_row("",            "")
+    tbl.add_row("Hız",         f"{rate:.2f} istek/sn")
+    tbl.add_row("Süre",        str(td))
+
+    stats_panel = Panel(tbl, title="[bold]OpenGuessr XP Farm[/bold]",
+                        border_style="cyan", padding=(1, 2))
+
+    # ── Sağ panel: canlı log ──
+    with log_lock:
+        lines = list(log_lines)
+    log_text = Text()
+    for i, ln in enumerate(lines):
+        if i:
+            log_text.append("\n")
+        log_text.append_text(ln)
+
+    log_panel = Panel(log_text, title="[bold]İstek Geçmişi[/bold]",
+                      border_style="blue", padding=(0, 1))
+
+    layout = Layout()
+    layout.split_row(
+        Layout(stats_panel, name="stats", ratio=2),
+        Layout(log_panel,   name="log",   ratio=3),
+    )
+    return layout
+
+
+def worker(worker_id: int, initial_xp: int | None):
     headers = build_headers()
     payload = json.dumps({"id": str(USER_ID), "experience": XP_PER_REQ})
-    # Her istekte yeni session/IP istediğin için tek bir kalıcı session yok.
     consecutive_cf = 0
     last_ip = None
 
     while not stop_event.is_set():
-        # Her iterasyon = yeni session = yeni rastgele sid = yeni exit IP
         session = make_session(use_proxy=True)
         try:
             if VERIFY_IP:
@@ -150,9 +204,10 @@ def worker(worker_id: int):
                     ip = session.get(IP_CHECK_URL, timeout=15).text.strip()
                 except Exception as e:
                     ip = f"?({e.__class__.__name__})"
-                tag = "→ yeni IP" if ip != last_ip else "⚠ aynı IP!"
-                print(f"[T{worker_id}] IP: {ip:<16} {tag}")
+                ip_tag = "yeni" if ip != last_ip else "[yellow]AYNI[/yellow]"
                 last_ip = ip
+            else:
+                ip, ip_tag = "—", ""
 
             r = session.put(API_URL, headers=headers, data=payload, timeout=30)
             sc = r.status_code
@@ -165,24 +220,48 @@ def worker(worker_id: int):
                     stats["fail"] += 1
                 total = stats["ok"] + stats["fail"]
 
+            ts = time.strftime("%H:%M:%S")
+
             if sc == 200:
                 consecutive_cf = 0
+                add_log(Text.from_markup(
+                    f"[dim]{ts}[/dim]  [green]✓[/green]  [bold]+{XP_PER_REQ:,} XP[/bold]"
+                    f"  [dim]{ip}[/dim]  [cyan]{ip_tag}[/cyan]"
+                ))
+                if total % 10 == 0:
+                    pxp = fetch_profile_xp()
+                    if pxp is not None:
+                        with stats_lock:
+                            stats["profile_xp"] = pxp
+                        add_log(Text.from_markup(
+                            f"[dim]{ts}[/dim]  [yellow]↻[/yellow]  "
+                            f"Profil XP güncellendi: [bold yellow]{pxp:,}[/bold yellow]"
+                        ))
             elif sc in (401, 403):
                 txt = r.text
                 if "Just a moment" in txt or "<html" in txt.lower():
                     consecutive_cf += 1
-                    print(f"[T{worker_id}] ⚠ Cloudflare challenge — IP rotate ({consecutive_cf})")
+                    add_log(Text.from_markup(
+                        f"[dim]{ts}[/dim]  [yellow]⚠[/yellow]  "
+                        f"Cloudflare engeli — yeni IP ({consecutive_cf})"
+                    ))
                     time.sleep(min(consecutive_cf, 5))
                     continue
                 else:
-                    print(f"[T{worker_id}] ❌ Token reddedildi (HTTP {sc}): {txt[:160]}")
+                    add_log(Text.from_markup(
+                        f"[dim]{ts}[/dim]  [red]✗[/red]  Token geçersiz (HTTP {sc}) — durduruluyor"
+                    ))
                     stop_event.set()
                     return
             elif sc == 429:
-                print(f"[T{worker_id}] ⚠ 429 rate limit — 5 sn")
+                add_log(Text.from_markup(
+                    f"[dim]{ts}[/dim]  [yellow]⏳[/yellow]  Rate limit — 5 sn bekleniyor"
+                ))
                 time.sleep(5)
             else:
-                print(f"[T{worker_id}] ⚠ HTTP {sc}: {r.text[:120]}")
+                add_log(Text.from_markup(
+                    f"[dim]{ts}[/dim]  [red]⚠[/red]  HTTP {sc}: {r.text[:80]}"
+                ))
 
             if TOTAL_REQS and total >= TOTAL_REQS:
                 stop_event.set()
@@ -191,7 +270,10 @@ def worker(worker_id: int):
         except Exception as e:
             with stats_lock:
                 stats["fail"] += 1
-            print(f"[T{worker_id}] ⚠ {e.__class__.__name__}: {e}")
+            ts = time.strftime("%H:%M:%S")
+            add_log(Text.from_markup(
+                f"[dim]{ts}[/dim]  [red]![/red]  {e.__class__.__name__}: {e}"
+            ))
             time.sleep(2)
             continue
         finally:
@@ -201,81 +283,62 @@ def worker(worker_id: int):
         time.sleep(random.uniform(DELAY_MIN, DELAY_MAX))
 
 
-def reporter():
-    last_ok = 0
-    while not stop_event.is_set():
-        time.sleep(5)
-        with stats_lock:
-            ok = stats["ok"]; fail = stats["fail"]; xp = stats["xp"]
-            elapsed = time.time() - stats["start"]
-        rps = (ok - last_ok) / 5.0
-        last_ok = ok
-        print(f"[STAT] ✓ {ok:5d}  ✗ {fail:4d}  | XP +{xp:>10,}  "
-              f"| {rps:4.1f} ok/sn  | uptime {elapsed:6.0f}sn")
-
-
 def main():
     if not BEARER_TOKEN or not USER_ID:
-        print("❌ BEARER_TOKEN ve USER_ID değerlerini doldurun.")
+        console.print("[red]BEARER_TOKEN ve USER_ID değerlerini doldurun.[/red]")
         sys.exit(1)
 
-    print("─" * 60)
-    print(f" Proxy        : {PROXY_HOST}:{PROXY_PORT}  (residential)")
-    print(f" Impersonate  : {IMPERSONATE}")
-    print(f" User         : {USER_ID}")
-    print(f" Worker       : {THREADS} thread  | XP/req: {XP_PER_REQ:,}  "
-          f"| delay {DELAY_MIN}-{DELAY_MAX}s")
-    print("─" * 60)
-
-    # 1) Direct preflight (senin IP'n)
-    ok_direct, sc_direct = preflight(use_proxy=False)
-    # 2) Proxy preflight
-    ok_proxy,  sc_proxy  = preflight(use_proxy=True)
-
-    if not ok_proxy:
-        print("❌ Proxy üzerinden çalışmıyor. Çıkılıyor.")
-        if ok_direct:
-            print("ℹ Direct çalışıyor — sorun Cloudflare'in DataImpulse residential "
-                  "IP'lerini block etmesi. DataImpulse panelinde farklı bir target "
-                  "country/sticky session deneyin.")
-        sys.exit(1)
-    print("✓ Proxy üzerinden Cloudflare aşıldı, başlıyoruz.")
-
-    initial_xp = fetch_profile_xp(use_proxy=False)
+    console.print("[cyan]Başlangıç XP'i alınıyor...[/cyan]", end=" ")
+    initial_xp = fetch_profile_xp()
     if initial_xp is not None:
-        print(f"📊 Başlangıç XP: {initial_xp:,}")
-
-    rep = threading.Thread(target=reporter, daemon=True)
-    rep.start()
+        with stats_lock:
+            stats["profile_xp"] = initial_xp
+        console.print(f"[bold green]{initial_xp:,}[/bold green]")
+    else:
+        console.print("[yellow]alınamadı[/yellow]")
 
     try:
-        with ThreadPoolExecutor(max_workers=THREADS) as pool:
-            for i in range(THREADS):
-                pool.submit(worker, i + 1)
-            try:
+        with Live(build_ui(initial_xp), console=console, refresh_per_second=2,
+                  screen=True) as live:
+
+            def _refresh():
                 while not stop_event.is_set():
+                    live.update(build_ui(initial_xp))
                     time.sleep(0.5)
+
+            refresh_thread = threading.Thread(target=_refresh, daemon=True)
+            refresh_thread.start()
+
+            try:
+                with ThreadPoolExecutor(max_workers=THREADS) as pool:
+                    for i in range(THREADS):
+                        pool.submit(worker, i + 1, initial_xp)
+                    while not stop_event.is_set():
+                        time.sleep(0.5)
             except KeyboardInterrupt:
-                print("\n⏹ Durduruluyor…")
                 stop_event.set()
+
     finally:
         with stats_lock:
-            ok = stats["ok"]; fail = stats["fail"]; xp = stats["xp"]
+            ok   = stats["ok"]
+            fail = stats["fail"]
+            xp   = stats["xp"]
             elapsed = time.time() - stats["start"]
-        print("─" * 60)
-        print(f" Toplam başarılı : {ok}")
-        print(f" Toplam hata     : {fail}")
-        print(f" Kazanılan XP    : {xp:,}")
-        print(f" Süre            : {elapsed:.1f} sn")
-        if elapsed > 0 and ok > 0:
-            print(f" Ortalama        : {ok/elapsed:.2f} ok/sn  ({xp/elapsed:,.0f} XP/sn)")
 
-        final_xp = fetch_profile_xp(use_proxy=False)
+        final_xp = fetch_profile_xp()
+
+        console.rule("[bold cyan]Sonuç[/bold cyan]")
+        console.print(f" Başarılı       : [green]{ok}[/green]")
+        console.print(f" Hatalı         : [red]{fail}[/red]")
+        console.print(f" Kazanılan XP   : [bold]+{xp:,}[/bold]")
+        console.print(f" Süre           : {timedelta(seconds=int(elapsed))}")
+        if elapsed > 0 and ok > 0:
+            console.print(f" Hız (ort.)     : {ok/elapsed:.2f} istek/sn")
         if final_xp is not None:
-            print(f" Profil XP (son) : {final_xp:,}")
+            console.print(f" Profil XP (son): [bold yellow]{final_xp:,}[/bold yellow]")
             if initial_xp is not None:
-                print(f" Gerçek artış    : +{final_xp - initial_xp:,}")
-        print("─" * 60)
+                console.print(f" Gerçek artış   : [bold green]+{final_xp - initial_xp:,}[/bold green]")
+        console.rule()
 
 
 if __name__ == "__main__":

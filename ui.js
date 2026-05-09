@@ -352,7 +352,7 @@
                 this.textContent = '⏹ Durdur';
                 this.classList.add('running');
                 if (typeof window.startXPFarm === 'function') {
-                    window.startXPFarm({ token, userId, intervalMs: interval * 1000, xpPerReq: 7500 });
+                    window.startXPFarm({ token, userId, intervalMs: interval * 1000, xpPerReq: 10000 });
                 }
             }
         });
