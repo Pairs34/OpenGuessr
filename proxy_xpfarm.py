@@ -152,7 +152,7 @@ def build_ui(initial_xp: int | None) -> Layout:
     gained_str   = (f"+{profile - initial_xp:,}" if (profile and initial_xp) else
                     f"+{xp_earned:,} (tahmini)")
 
-    tbl.add_row("Proxy",       f"{PROXY_HOST}:{PROXY_PORT}")
+    tbl.add_row("Proxy",       "[dim]Devre dışı[/dim]")
     tbl.add_row("Kullanıcı",   USER_ID)
     tbl.add_row("XP/istek",    f"{XP_PER_REQ:,}")
     tbl.add_row("Bekleme",     f"{DELAY_MIN}–{DELAY_MAX} sn")
@@ -197,7 +197,7 @@ def worker(worker_id: int, initial_xp: int | None):
     last_ip = None
 
     while not stop_event.is_set():
-        session = make_session(use_proxy=True)
+        session = make_session(use_proxy=False)
         try:
             if VERIFY_IP:
                 try:
@@ -299,7 +299,7 @@ def main():
 
     try:
         with Live(build_ui(initial_xp), console=console, refresh_per_second=2,
-                  screen=True) as live:
+                  screen=False) as live:
 
             def _refresh():
                 while not stop_event.is_set():
