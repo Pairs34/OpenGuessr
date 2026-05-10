@@ -27,6 +27,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+IS_TTY  = sys.stdout.isatty()   # False ise Railway/CI gibi ortam → düz print
 console = Console()
 LOG_MAX = 18  # log panelinde görünecek max satır
 log_lines: deque[Text] = deque(maxlen=LOG_MAX)
@@ -41,7 +42,7 @@ DELAY_MIN    = 4.0
 DELAY_MAX    = 7.0
 XP_PER_REQ   = 10000
 TOTAL_REQS   = 0          # 0 = sınırsız
-VERIFY_IP    = True       # Her istek öncesi exit IP'yi doğrula (api.ipify.org)
+VERIFY_IP    = False      # Proxy kullanılmadığında gereksiz; True yapınca IP loglanır
 IP_CHECK_URL = "https://api.ipify.org?format=text"
 
 # curl_cffi impersonation profili. chrome120/124/131 hepsi olur; Postman'in geçtiği
@@ -129,6 +130,9 @@ def fetch_profile_xp() -> int | None:
 def add_log(text: Text) -> None:
     with log_lock:
         log_lines.append(text)
+    if not IS_TTY:
+        # TTY olmayan ortamda (Railway vb.) anında düz metin yazdır
+        print(text.plain, flush=True)
 
 
 def build_ui(initial_xp: int | None) -> Layout:
@@ -288,27 +292,40 @@ def main():
         console.print("[red]BEARER_TOKEN ve USER_ID değerlerini doldurun.[/red]")
         sys.exit(1)
 
-    console.print("[cyan]Başlangıç XP'i alınıyor...[/cyan]", end=" ")
+    print("Başlangıç XP'i alınıyor...", flush=True)
     initial_xp = fetch_profile_xp()
     if initial_xp is not None:
         with stats_lock:
             stats["profile_xp"] = initial_xp
-        console.print(f"[bold green]{initial_xp:,}[/bold green]")
+        print(f"Başlangıç XP: {initial_xp:,}", flush=True)
     else:
-        console.print("[yellow]alınamadı[/yellow]")
+        print("Başlangıç XP alınamadı", flush=True)
 
     try:
-        with Live(build_ui(initial_xp), console=console, refresh_per_second=2,
-                  screen=False) as live:
+        if IS_TTY:
+            # Interaktif terminal: zengin TUI
+            with Live(build_ui(initial_xp), console=console, refresh_per_second=2,
+                      screen=False) as live:
 
-            def _refresh():
-                while not stop_event.is_set():
-                    live.update(build_ui(initial_xp))
-                    time.sleep(0.5)
+                def _refresh():
+                    while not stop_event.is_set():
+                        live.update(build_ui(initial_xp))
+                        time.sleep(0.5)
 
-            refresh_thread = threading.Thread(target=_refresh, daemon=True)
-            refresh_thread.start()
+                refresh_thread = threading.Thread(target=_refresh, daemon=True)
+                refresh_thread.start()
 
+                try:
+                    with ThreadPoolExecutor(max_workers=THREADS) as pool:
+                        for i in range(THREADS):
+                            pool.submit(worker, i + 1, initial_xp)
+                        while not stop_event.is_set():
+                            time.sleep(0.5)
+                except KeyboardInterrupt:
+                    stop_event.set()
+        else:
+            # TTY yok (Railway/CI): düz log, add_log zaten print ediyor
+            print(f"Kullanıcı: {USER_ID}  |  XP/istek: {XP_PER_REQ:,}  |  Thread: {THREADS}", flush=True)
             try:
                 with ThreadPoolExecutor(max_workers=THREADS) as pool:
                     for i in range(THREADS):
@@ -327,18 +344,18 @@ def main():
 
         final_xp = fetch_profile_xp()
 
-        console.rule("[bold cyan]Sonuç[/bold cyan]")
-        console.print(f" Başarılı       : [green]{ok}[/green]")
-        console.print(f" Hatalı         : [red]{fail}[/red]")
-        console.print(f" Kazanılan XP   : [bold]+{xp:,}[/bold]")
-        console.print(f" Süre           : {timedelta(seconds=int(elapsed))}")
+        print("--- Sonuç ---", flush=True)
+        print(f" Başarılı       : {ok}", flush=True)
+        print(f" Hatalı         : {fail}", flush=True)
+        print(f" Kazanılan XP   : +{xp:,}", flush=True)
+        print(f" Süre           : {timedelta(seconds=int(elapsed))}", flush=True)
         if elapsed > 0 and ok > 0:
-            console.print(f" Hız (ort.)     : {ok/elapsed:.2f} istek/sn")
+            print(f" Hız (ort.)     : {ok/elapsed:.2f} istek/sn", flush=True)
         if final_xp is not None:
-            console.print(f" Profil XP (son): [bold yellow]{final_xp:,}[/bold yellow]")
+            print(f" Profil XP (son): {final_xp:,}", flush=True)
             if initial_xp is not None:
-                console.print(f" Gerçek artış   : [bold green]+{final_xp - initial_xp:,}[/bold green]")
-        console.rule()
+                print(f" Gerçek artış   : +{final_xp - initial_xp:,}", flush=True)
+        print("-------------", flush=True)
 
 
 if __name__ == "__main__":
