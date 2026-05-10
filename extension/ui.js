@@ -228,6 +228,18 @@
         }
         #og-xp-start.running { background: #f66; color: #fff; }
         #og-xp-start:hover { filter: brightness(1.1); }
+        #og-panel-elo {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-top: 8px;
+        }
+        #og-elo-status {
+            font-size: 10px;
+            color: #56d364;
+            font-family: 'Consolas', monospace;
+            min-height: 14px;
+        }
     `;
 
     /* ── DOM oluştur ───────────────────────────────────────── */
@@ -252,6 +264,7 @@
                 <button class="og-mode-btn active" data-mode="auto">🤖 Oto-Oyun</button>
                 <button class="og-mode-btn" data-mode="duel">⚔️ Duello</button>
                 <button class="og-mode-btn" data-mode="xp">⚡ XP Farm</button>
+                <button class="og-mode-btn" data-mode="elo">🏆 ELO</button>
             </div>
             <div id="og-panel-auto">
                 <div id="og-auto-row">
@@ -297,6 +310,16 @@
                 </div>
                 <button id="og-xp-start">▶ Başlat</button>
             </div>
+            <div id="og-panel-elo" style="display:none">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="og-elo-toggle">
+                    <label for="og-elo-toggle" style="font-size:12px;color:#9ab4f0;font-weight:600;cursor:pointer;flex:1">WS ile Otomatik Kazan</label>
+                </div>
+                <div id="og-elo-status"></div>
+                <div style="font-size:10px;color:#788;line-height:1.5;">
+                    Duello odasına gir, her tur başında tam koordinatı WebSocket üzerinden otomatik gönderir. Rakibinin token'ına gerek yok.
+                </div>
+            </div>
             <div id="og-auto-status"></div>
         `;
 
@@ -328,12 +351,26 @@
             chrome.storage.local.set({ ogDuelEnabled: this.checked });
         });
 
+        // ELO Farm toggle
+        document.getElementById('og-elo-toggle').addEventListener('change', function () {
+            window.dispatchEvent(new CustomEvent('og-elofarm', { detail: { enabled: this.checked } }));
+            chrome.storage.local.set({ ogEloEnabled: this.checked });
+        });
+
+        // ELO Farm durum güncellemesi (map-main.js MAIN world'den gelir)
+        window.addEventListener('og-elofarm-status', function (e) {
+            const el = document.getElementById('og-elo-status');
+            if (el) el.textContent = e.detail.text;
+            window.setAutoStatus(e.detail.text);
+        });
+
         // Mod seçici
         function switchMode(mode) {
             card.querySelectorAll('.og-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
             document.getElementById('og-panel-auto').style.display = mode === 'auto' ? '' : 'none';
             document.getElementById('og-panel-duel').style.display = mode === 'duel' ? '' : 'none';
             document.getElementById('og-panel-xp').style.display   = mode === 'xp'   ? '' : 'none';
+            document.getElementById('og-panel-elo').style.display  = mode === 'elo'  ? '' : 'none';
             chrome.storage.local.set({ ogMode: mode });
 
             if (mode !== 'auto') {
@@ -343,6 +380,10 @@
             if (mode !== 'duel') {
                 const t = document.getElementById('og-duel-toggle');
                 if (t && t.checked) { t.checked = false; if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(false); }
+            }
+            if (mode !== 'elo') {
+                const t = document.getElementById('og-elo-toggle');
+                if (t && t.checked) { t.checked = false; window.dispatchEvent(new CustomEvent('og-elofarm', { detail: { enabled: false } })); }
             }
             if (mode !== 'xp' && typeof window.isXPFarmRunning === 'function' && window.isXPFarmRunning()) {
                 window.stopXPFarm();
@@ -355,13 +396,13 @@
             btn.addEventListener('click', function () { switchMode(this.dataset.mode); });
         });
 
-        // Duello URL'sindeyse otomatik duello sekmesine geç ve toggle'ı aç
+        // Duello URL'sindeyse otomatik ELO sekmesine geç ve toggle'ı aç
         if (location.pathname.includes('/duel') || location.href.includes('/duel')) {
-            switchMode('duel');
-            const t = document.getElementById('og-duel-toggle');
+            switchMode('elo');
+            const t = document.getElementById('og-elo-toggle');
             if (t && !t.checked) {
                 t.checked = true;
-                if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(true, 'duel');
+                window.dispatchEvent(new CustomEvent('og-elofarm', { detail: { enabled: true } }));
             }
         }
 
@@ -454,15 +495,17 @@
             }
             saveDelays();
 
-            // Mod — duello URL'sindeyse her zaman duel
+            // Mod — duello URL'sindeyse elo farm, değilse kaydedilen mod (elo kaydedilmişse sıfırla)
             const isDuelUrl = location.pathname.includes('/duel') || location.href.includes('/duel');
-            const mode = isDuelUrl ? 'duel' : (data.ogMode || 'auto');
+            const savedMode = data.ogMode === 'elo' ? 'auto' : (data.ogMode || 'auto');
+            const mode = isDuelUrl ? 'elo' : savedMode;
             document.querySelectorAll('.og-mode-btn').forEach(b => {
                 b.classList.toggle('active', b.dataset.mode === mode);
             });
             document.getElementById('og-panel-auto').style.display = mode === 'auto' ? '' : 'none';
             document.getElementById('og-panel-duel').style.display = mode === 'duel' ? '' : 'none';
             document.getElementById('og-panel-xp').style.display   = mode === 'xp'   ? '' : 'none';
+            document.getElementById('og-panel-elo').style.display  = mode === 'elo'  ? '' : 'none';
 
             // XP Farm ayarları
             if (data.ogXP) {
@@ -493,6 +536,14 @@
                 if (t && !t.checked) {
                     t.checked = true;
                     if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(true, 'duel');
+                }
+            }
+            // ELO Farm otomatik aktif (sadece duel URL'sinde)
+            if (mode === 'elo' && isDuelUrl) {
+                const t = document.getElementById('og-elo-toggle');
+                if (t && !t.checked) {
+                    t.checked = true;
+                    window.dispatchEvent(new CustomEvent('og-elofarm', { detail: { enabled: true } }));
                 }
             }
         });
