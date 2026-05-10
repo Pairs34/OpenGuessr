@@ -250,6 +250,7 @@
             <button id="og-open">🗺️ Google Maps'te Aç</button>
             <div id="og-mode-row">
                 <button class="og-mode-btn active" data-mode="auto">🤖 Oto-Oyun</button>
+                <button class="og-mode-btn" data-mode="duel">⚔️ Duello</button>
                 <button class="og-mode-btn" data-mode="xp">⚡ XP Farm</button>
             </div>
             <div id="og-panel-auto">
@@ -270,6 +271,15 @@
                         <span class="og-delay-sep">–</span>
                         <input class="og-delay-input" id="og-c-max" type="number" min="0.5" max="30" step="0.5" value="6.5">
                     </div>
+                </div>
+            </div>
+            <div id="og-panel-duel" style="display:none">
+                <div id="og-duel-auto-row" style="display:flex;align-items:center;gap:8px;padding-top:8px;">
+                    <input type="checkbox" id="og-duel-toggle">
+                    <label id="og-duel-label" for="og-duel-toggle" style="font-size:12px;color:#9ab4f0;font-weight:600;cursor:pointer;flex:1">Otomatik Oyna</label>
+                </div>
+                <div style="font-size:10px;color:#788;margin-top:6px;line-height:1.5">
+                    Duello odasına girilince pin atıp Guess'e basar, sonra Play again ile döngü devam eder.
                 </div>
             </div>
             <div id="og-panel-xp">
@@ -312,30 +322,48 @@
             document.getElementById(id).addEventListener('change', saveDelays);
         });
 
-        // Mod seçici
-        card.querySelectorAll('.og-mode-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                card.querySelectorAll('.og-mode-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                const mode = this.dataset.mode;
-                document.getElementById('og-panel-auto').style.display = mode === 'auto' ? '' : 'none';
-                document.getElementById('og-panel-xp').style.display   = mode === 'xp'   ? '' : 'none';
-                chrome.storage.local.set({ ogMode: mode });
-                if (mode === 'xp') {
-                    // Auto'yu kapat
-                    const t = document.getElementById('og-auto-toggle');
-                    if (t && t.checked) {
-                        t.checked = false;
-                        if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(false);
-                    }
-                }
-                if (mode === 'auto' && typeof window.isXPFarmRunning === 'function' && window.isXPFarmRunning()) {
-                    window.stopXPFarm();
-                    const s = document.getElementById('og-xp-start');
-                    if (s) { s.textContent = '▶ Başlat'; s.classList.remove('running'); }
-                }
-            });
+        // Duello toggle
+        document.getElementById('og-duel-toggle').addEventListener('change', function () {
+            if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(this.checked, 'duel');
+            chrome.storage.local.set({ ogDuelEnabled: this.checked });
         });
+
+        // Mod seçici
+        function switchMode(mode) {
+            card.querySelectorAll('.og-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+            document.getElementById('og-panel-auto').style.display = mode === 'auto' ? '' : 'none';
+            document.getElementById('og-panel-duel').style.display = mode === 'duel' ? '' : 'none';
+            document.getElementById('og-panel-xp').style.display   = mode === 'xp'   ? '' : 'none';
+            chrome.storage.local.set({ ogMode: mode });
+
+            if (mode !== 'auto') {
+                const t = document.getElementById('og-auto-toggle');
+                if (t && t.checked) { t.checked = false; if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(false); }
+            }
+            if (mode !== 'duel') {
+                const t = document.getElementById('og-duel-toggle');
+                if (t && t.checked) { t.checked = false; if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(false); }
+            }
+            if (mode !== 'xp' && typeof window.isXPFarmRunning === 'function' && window.isXPFarmRunning()) {
+                window.stopXPFarm();
+                const s = document.getElementById('og-xp-start');
+                if (s) { s.textContent = '▶ Başlat'; s.classList.remove('running'); }
+            }
+        }
+
+        card.querySelectorAll('.og-mode-btn').forEach(btn => {
+            btn.addEventListener('click', function () { switchMode(this.dataset.mode); });
+        });
+
+        // Duello URL'sindeyse otomatik duello sekmesine geç ve toggle'ı aç
+        if (location.pathname.includes('/duel') || location.href.includes('/duel')) {
+            switchMode('duel');
+            const t = document.getElementById('og-duel-toggle');
+            if (t && !t.checked) {
+                t.checked = true;
+                if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(true, 'duel');
+            }
+        }
 
         // XP Farm başlat / durdur
         document.getElementById('og-xp-start').addEventListener('click', function () {
@@ -426,15 +454,15 @@
             }
             saveDelays();
 
-            // Mod
-            const mode = data.ogMode || 'auto';
-            if (mode !== 'auto') {
-                document.querySelectorAll('.og-mode-btn').forEach(b => {
-                    b.classList.toggle('active', b.dataset.mode === mode);
-                });
-                document.getElementById('og-panel-auto').style.display = 'none';
-                document.getElementById('og-panel-xp').style.display   = '';
-            }
+            // Mod — duello URL'sindeyse her zaman duel
+            const isDuelUrl = location.pathname.includes('/duel') || location.href.includes('/duel');
+            const mode = isDuelUrl ? 'duel' : (data.ogMode || 'auto');
+            document.querySelectorAll('.og-mode-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.mode === mode);
+            });
+            document.getElementById('og-panel-auto').style.display = mode === 'auto' ? '' : 'none';
+            document.getElementById('og-panel-duel').style.display = mode === 'duel' ? '' : 'none';
+            document.getElementById('og-panel-xp').style.display   = mode === 'xp'   ? '' : 'none';
 
             // XP Farm ayarları
             if (data.ogXP) {
@@ -450,13 +478,21 @@
             document.getElementById('og-xp-token').value  = lsToken  || savedToken  || '';
             document.getElementById('og-xp-userid').value = lsUserId || savedUserId || '';
 
-            // Auto-play durumunu geri yükle (sadece auto modunda)
+            // Auto-play durumunu geri yükle
             if (data.ogAutoEnabled && mode === 'auto') {
                 const toggle = document.getElementById('og-auto-toggle');
                 toggle.checked = true;
                 if (typeof window.toggleAutoPlay === 'function') {
                     window.toggleAutoPlay(true);
                     if (currentLat !== null) window.onPinPlaced(currentLat, currentLng);
+                }
+            }
+            // Duello otomatik aktif
+            if (mode === 'duel') {
+                const t = document.getElementById('og-duel-toggle');
+                if (t && !t.checked) {
+                    t.checked = true;
+                    if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(true, 'duel');
                 }
             }
         });
@@ -525,6 +561,9 @@
         if (!card || !coords) return;
 
         coords.textContent = `${lat.toFixed(7)},  ${lng.toFixed(7)}`;
+
+        // Leaflet haritasına pin at (map-main.js - MAIN world)
+        window.dispatchEvent(new CustomEvent('og-pin', { detail: { lat, lng } }));
 
         // Oto-oyun: pin düştüğünü bildir
         if (typeof window.onPinPlaced === 'function') window.onPinPlaced(lat, lng);
