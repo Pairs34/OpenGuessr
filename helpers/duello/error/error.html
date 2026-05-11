@@ -1,0 +1,373 @@
+<html lang="en"><head>
+	<meta charset="utf-8">
+	<link rel="icon" href="https://openguessr.com/favicon.ico">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<meta name="description" content="Free GeoGuessr alternative with unlimited playtime and multiplayer. Play GeoGuessr free of charge and learn geography by guessing where you are!">
+
+	<!-- favicons -->
+	<link rel="icon" type="image/svg+xml" href="https://openguessr.com/img/favicon.svg">
+	<link rel="icon" type="image/png" sizes="48x48" href="https://openguessr.com/img/favicon-48x48.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="https://openguessr.com/img/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="https://openguessr.com/img/favicon-16x16.png">
+	<link rel="icon" href="https://openguessr.com/favicon.ico">
+
+	<!-- manifest and large icons -->
+	<link rel="manifest" href="/img/site.webmanifest">
+	<link rel="apple-touch-icon" sizes="180x180" href="https://openguessr.com/img/apple-touch-icon.png">
+
+	<!-- colors -->
+	<meta name="theme-color" content="#07071e">
+	<meta name="msapplication-TileColor" content="#da532c">
+
+	<!-- structured data -->
+	<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "WebSite",
+			"name": "OpenGuessr - Free GeoGuessr Alternative",
+			"alternateName": "OpenGuessr",
+			"url": "https://openguessr.com"
+		}
+	</script>
+
+	<link href="/_app/immutable/entry/start.Cn3b5Uft.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BQnG3E_O.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BUoIQkVY.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BySrnqd7.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DuPSUBhw.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.BdlFQrGt.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/C1FmrZbK.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CWj6FrbW.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CJMvIweO.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CGjq_Trv.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BgCb9kf6.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CIra8r84.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/PBaAgoRj.js" rel="modulepreload">
+		
+<style>
+        #og-card {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 2147483647;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            background: #0f0f1a;
+            border: 1px solid #4285f4;
+            border-radius: 14px;
+            padding: 14px 16px;
+            min-width: 220px;
+            box-shadow: 0 6px 28px rgba(66,133,244,0.35);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #fff;
+            animation: og-in 0.3s cubic-bezier(.2,.8,.4,1) both;
+            user-select: none;
+        }
+        @keyframes og-in {
+            from { opacity: 0; transform: translateY(16px) scale(.97); }
+            to   { opacity: 1; transform: translateY(0)   scale(1);    }
+        }
+        #og-card.og-refresh {
+            animation: none;
+        }
+        #og-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+        }
+        #og-header:active {
+            cursor: grabbing;
+        }
+        #og-title {
+            font-size: 12px;
+            color: #9ab4f0;
+            font-weight: 600;
+            letter-spacing: .4px;
+            text-transform: uppercase;
+        }
+        #og-close {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            padding: 0 2px;
+            transition: color .15s;
+        }
+        #og-close:hover { color: #f44; }
+        #og-coords {
+            font-size: 11px;
+            color: #788;
+            font-family: 'Consolas', monospace;
+        }
+        #og-open {
+            background: #4285f4;
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            padding: 9px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            transition: background .15s, transform .1s;
+        }
+        #og-open:hover  { background: #3367d6; transform: scale(1.02); }
+        #og-open:active { transform: scale(.98); }
+        #og-auto-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-top: 1px solid #1e2240;
+            padding-top: 10px;
+            margin-top: 2px;
+        }
+        #og-auto-toggle {
+            appearance: none;
+            width: 34px;
+            height: 18px;
+            background: #2a2a45;
+            border-radius: 9px;
+            position: relative;
+            cursor: pointer;
+            transition: background .2s;
+            flex-shrink: 0;
+            border: 1px solid #4285f4;
+        }
+        #og-auto-toggle:checked {
+            background: #4285f4;
+        }
+        #og-auto-toggle::after {
+            content: '';
+            position: absolute;
+            width: 12px; height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px; left: 2px;
+            transition: left .2s;
+        }
+        #og-auto-toggle:checked::after {
+            left: 18px;
+        }
+        #og-auto-label {
+            font-size: 12px;
+            color: #9ab4f0;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+        }
+        #og-auto-status {
+            font-size: 10px;
+            color: #56d364;
+            font-family: 'Consolas', monospace;
+            min-height: 14px;
+        }
+        #og-delays {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            border-top: 1px solid #1e2240;
+            padding-top: 10px;
+        }
+        .og-delay-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .og-delay-row label {
+            font-size: 10px;
+            color: #788;
+            width: 82px;
+            flex-shrink: 0;
+        }
+        .og-delay-input {
+            width: 48px;
+            background: #1a1a2e;
+            border: 1px solid #2e3460;
+            border-radius: 5px;
+            color: #9ab4f0;
+            font-size: 11px;
+            padding: 3px 5px;
+            text-align: center;
+            user-select: text;
+        }
+        .og-delay-input:focus {
+            outline: none;
+            border-color: #4285f4;
+        }
+        .og-delay-sep {
+            font-size: 10px;
+            color: #555;
+        }
+        #og-mode-row {
+            display: flex;
+            gap: 6px;
+            border-top: 1px solid #1e2240;
+            padding-top: 10px;
+        }
+        .og-mode-btn {
+            flex: 1;
+            background: #1a1a2e;
+            border: 1px solid #2e3460;
+            border-radius: 7px;
+            color: #788;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 5px 4px;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .og-mode-btn.active {
+            background: #4285f4;
+            border-color: #4285f4;
+            color: #fff;
+        }
+        #og-panel-xp {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-top: 8px;
+        }
+        #og-xp-token {
+            width: 100%;
+            background: #1a1a2e;
+            border: 1px solid #2e3460;
+            border-radius: 5px;
+            color: #9ab4f0;
+            font-size: 10px;
+            padding: 4px 6px;
+            resize: vertical;
+            min-height: 44px;
+            font-family: 'Consolas', monospace;
+            box-sizing: border-box;
+            user-select: text;
+        }
+        #og-xp-token:focus { outline: none; border-color: #4285f4; }
+        #og-xp-start {
+            background: #56d364;
+            color: #0f0f1a;
+            border: none;
+            border-radius: 7px;
+            padding: 7px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: filter .15s;
+        }
+        #og-xp-start.running { background: #f66; color: #fff; }
+        #og-xp-start:hover { filter: brightness(1.1); }
+        #og-panel-elo {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-top: 8px;
+        }
+        #og-elo-status {
+            font-size: 10px;
+            color: #56d364;
+            font-family: 'Consolas', monospace;
+            min-height: 14px;
+        }
+    </style><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/nodes/0.Crw4mseG.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CeZg7kyx.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DaE_C2xo.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/BX2rTw2C.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/MoIPr4kY.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/0.Bw8h3zG1.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/nodes/1.Civ4QDpF.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/LJLp2hhO.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CoDzHNFv.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/ZdFMRG2V.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/1.jZkncvd3.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/nodes/2.DxF8387m.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DoLZjcE3.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/HYEmmcBZ.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/C5K6THNa.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DJM_6NqN.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/C_9U4AEM.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CsRSOAvp.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/Dh4YX3z6.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CNhbN-7J.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/BzIfRh_T.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DPpz8V-P.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CKjKX_Ui.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DXCCdTqO.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/Popup.B5ffdXHh.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/CNzD5LD5.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/Tabs.CwE2oFZX.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/B0Z5MIwO.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/D7J_D-Vr.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/BKWdARrq.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DqAvWe4a.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/Chip.BS1d2gZT.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/BM4eoBTa.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/DuelDivisionDisplay.DuTaHipZ.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/B2fDw-X_.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/TQFWfVa-.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/DDsxt8Ls.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/BnET9lUh.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/B3aHwtsY.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/PinHolder.FNopCEU2.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/KaKhpZVK.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/D5IHDR9V.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/SSqn7iKY.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/D_BblS_4.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/SvgMap.gZGOZcgF.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/C7RRGFwf.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/dKbjsEaq.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/Notification.C6T3PROt.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/BRBQfOK1.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/2.C38FHChc.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/nodes/4.GVp-uDwV.js"><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer=""></script><!----><script src="https://cdn.fuseplatform.net/publift/tags/2/4180/fuse.js" async=""></script> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"> <link rel="stylesheet" href="https://sdk.playlight.dev/playlight-sdk.css"><script src="https://www.googletagmanager.com/gtag/js?id=G-DXD64B7ZDX" async=""></script><!----><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/-XkcyHKR.js"><title>OpenGuessr - Free GeoGuessr Alternative</title><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/nodes/3.DucojyL9.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/3.D2q2obpl.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/nodes/13.kaGP4tCW.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/u69bfMAe.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/Drawer.C43-EZfZ.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/B8ZeJwnD.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/jNuaJfnV.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/Dj3oYIAS.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/13.BKVqH5y4.css"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/nodes/14.B6Y5Fy83.js"><link rel="modulepreload" as="script" crossorigin="" href="https://openguessr.com/_app/immutable/chunks/1esGiEK1.js"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/MultiplayerMatchmakingDisplay.Bpnsy6qv.css"><link rel="stylesheet" crossorigin="" href="https://openguessr.com/_app/immutable/assets/14.ZEUacUY-.css"></head>
+
+<body data-sveltekit-preload-data="hover">
+	<div style="display: contents">
+			<script>
+				{
+					__sveltekit_lswd0f = {
+						base: ""
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("/_app/immutable/entry/start.Cn3b5Uft.js"),
+						import("/_app/immutable/entry/app.BdlFQrGt.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element);
+					});
+				}
+			</script>
+		<!----><!----><!----><!----><!----><h1 style="display: none;">Free GeoGuessr alternative with unlimited playtime and multiplayer. Play GeoGuessr free of charge and learn geography
+	by guessing where you are!</h1> <h2 style="display: none;">OpenGuessr is like GeoGuessr, but free and unlimited, enabling you to guess the location without a subscription
+	(kostenlos, gratis). The game includes online multiplayer to play with friends, is unblocked, partially open-source,
+	and uses Google Street View. Can you guess the country, or even guess where you are? Travel across the world map today
+	and become the next Rainbolt.</h2> <!----> <!----> <div class="logo svelte-8ie7t1"><img class="image svelte-8ie7t1" src="/img/openguessr.svg" alt="OpenGuessr logo - the free geography location-guessing game"></div><!----> <nav class="menu-button-area barMenu svelte-yic9pk"><!----> <button class="standardButton white menu-button svelte-yic9pk" aria-label="Menu"><span class="menu-span svelte-yic9pk">Menu</span> <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-ellipsis-vertical"><!----><circle cx="12" cy="12" r="1"></circle><!----><circle cx="12" cy="5" r="1"></circle><!----><circle cx="12" cy="19" r="1"></circle><!----><!----></svg><!----></button></nav> <!----> <!----><!----> <div class="notification-holder svelte-6rhnmd" style="top: var(--box-margin);"><!----></div><!----> <!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----><!----> <div style="display: none;"></div><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><div class="popupHolder svelte-adl33p" role="dialog" tabindex="0" style="z-index: 100;"><div class="uiWindow svelte-adl33p" style="max-width: 750px;"><button class="closePopupButton standardButton white svelte-adl33p" aria-label="close"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-x"><!----><path d="M18 6 6 18"></path><!----><path d="m6 6 12 12"></path><!----><!----></svg><!----></button> <div class="content of-top of-bottom svelte-adl33p" style="mask-image: linear-gradient(rgb(0, 0, 0) 0%, rgb(0, 0, 0) 2%, rgb(0, 0, 0) 3.52%, rgb(0, 0, 0) 4.96%, rgb(0, 0, 0) 6.48%, rgb(0, 0, 0) 8%, black 8.96%, black 91.04%, rgb(0, 0, 0) 92%, rgb(0, 0, 0) 93.52%, rgb(0, 0, 0) 95.04%, rgb(0, 0, 0) 96.48%, rgb(0, 0, 0) 98%, rgb(0, 0, 0) 100%);"><div class="popup-title"><h1 id="socialHeader">Victory!</h1></div> <div class="duelResultFlex svelte-1cu5pzb"><div class="resultBox svelte-1cu5pzb"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-flame resultText" style="margin-right: 2px; margin-bottom: -2px; opacity: 1;"><!----><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"></path><!----><!----></svg><!----> <h2 class="resultText svelte-1cu5pzb" style="opacity: 1;">12</h2></div> <div class="resultBox svelte-1cu5pzb"><h2 class="resultText svelte-1cu5pzb">+ 11 Elo</h2></div> <div class="token-reward-display svelte-959ef0 token-reward-background"><div class="sparkles svelte-959ef0 animated-sparkles"></div> <div class="token-box svelte-959ef0" style="opacity: 1;"><h2 class="title-text svelte-959ef0">+ 6</h2> <img class="token-icon svelte-959ef0" alt="token" src="/img/token_icon_white.png"></div></div><!----></div> <div class="progressContainer svelte-18ryhmt"><div class="progressBarWrapper svelte-18ryhmt"><div class="progressBar svelte-18ryhmt"><div class="progressBarFill svelte-18ryhmt" style="width: 23.75%;"></div></div> <div class="divisionMarker svelte-18ryhmt" style="left: 0%;"><div class="divisionCircle svelte-18ryhmt activeDivision"><span class="divisionText svelte-18ryhmt">V</span></div></div><div class="divisionMarker svelte-18ryhmt" style="left: 25%;"><div class="divisionCircle svelte-18ryhmt"><span class="divisionText svelte-18ryhmt">IV</span></div></div><div class="divisionMarker svelte-18ryhmt" style="left: 50%;"><div class="divisionCircle svelte-18ryhmt"><span class="divisionText svelte-18ryhmt">III</span></div></div><div class="divisionMarker svelte-18ryhmt" style="left: 75%;"><div class="divisionCircle svelte-18ryhmt"><span class="divisionText svelte-18ryhmt">II</span></div></div><div class="divisionMarker svelte-18ryhmt" style="left: 100%;"><div class="divisionCircle svelte-18ryhmt"><span class="divisionText svelte-18ryhmt">I</span></div></div><!----> <div class="eloIndicator svelte-18ryhmt" style="left: 23.75%;"><div class="eloLine svelte-18ryhmt"></div> <div class="eloValue svelte-18ryhmt">1.190 Elo</div></div></div></div><!----> <div class="infoBox svelte-1cu5pzb"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-info" style="opacity: 0.5; margin-left: var(--content-margin); margin-right: 2px; margin-top: 2px;"><!----><circle cx="12" cy="12" r="10"></circle><!----><path d="M12 16v-4"></path><!----><path d="M12 8h.01"></path><!----><!----></svg><!----> <p class="svelte-1cu5pzb">To report a player, open their profile and click on <i>Report</i>.</p> <button class="standardButton white growSearch svelte-1cu5pzb">History <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-history" style="margin-bottom: -3px; margin-left: 2px;"><!----><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><!----><path d="M3 3v5h5"></path><!----><path d="M12 7v5l4 2"></path><!----><!----></svg><!----></button></div> <button class="standardButton bottomButton largeButton">Play again</button><!----></div></div></div><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----> <div class="endBottomArea svelte-1mr706v" style="display: none;"><div class="endBottomBar svelte-1mr706v"><div class="resultAdArea barMenu svelte-1mr706v"><div class="resultAd svelte-1mr706v" id="resultAd" data-fuse="Game_Result_incontent_1"></div> <p class="noAdvertsText svelte-1mr706v">Purchase a supporter tier to go ad-free.</p></div> <div id="resultBox" class="barMenu svelte-1mr706v"><div id="motivationText" class="resultField svelte-1mr706v resultFieldHigh"><p class="svelte-1mr706v">Seriously impressive.</p></div> <div class="mobileResultAdArea resultField resultFieldHigh svelte-1mr706v"><div class="mobileResultAd svelte-1mr706v" id="mobileResultAd" data-fuse="Game_Result_Mob_Only"></div> <p class="noAdvertsText svelte-1mr706v">Ad.</p></div> <!----></div></div> <!----></div><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <!----><!----> <iframe id="panorama-iframe" referrerpolicy="no-referrer-when-downgrade" frameborder="0" class="svelte-1iva1yp" src="https://www.google.com/maps/embed/v1/streetview?location=40.04154684171022,-86.11755380906595&amp;key=AIzaSyAHt3QJRBDISRaWaqblQl2VwjWiHvjpgIs&amp;fov=90&amp;heading=359.2359&amp;language=en" style="filter: none;"></iframe><!----> <!----><!----> <div id="map-holder" class="regular-map-size map-holder svelte-nls3wc map-holder-ad-shift"><!----><!----><div class="mapAttribution mapAttributionContainer svelte-ygr3ex"><div class="mapAttributionDataBox svelte-ygr3ex"><p class="svelte-ygr3ex">Map Data ©2026 Google</p> <p class="svelte-ygr3ex"><a style="color: black; text-decoration: none; pointer-events: auto; font-family: Roboto;" href="https://www.google.com/intl/en_US/help/terms_maps/" target="_blank" class="svelte-ygr3ex">Terms</a></p></div> <div class="mapAttributionLogo mapAttribution svelte-ygr3ex"><img style="width: 60px" alt="Google" src="data:image/svg+xml,%3Csvg%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2069%2029%22%3E%3Cg%20opacity%3D%22.6%22%20fill%3D%22%23fff%22%20stroke%3D%22%23fff%22%20stroke-width%3D%221.5%22%3E%3Cpath%20d%3D%22M17.4706%207.33616L18.0118%206.79504%2017.4599%206.26493C16.0963%204.95519%2014.2582%203.94522%2011.7008%203.94522c-4.613699999999999%200-8.50262%203.7551699999999997-8.50262%208.395779999999998C3.19818%2016.9817%207.0871%2020.7368%2011.7008%2020.7368%2014.1712%2020.7368%2016.0773%2019.918%2017.574%2018.3689%2019.1435%2016.796%2019.5956%2014.6326%2019.5956%2012.957%2019.5956%2012.4338%2019.5516%2011.9316%2019.4661%2011.5041L19.3455%2010.9012H10.9508V14.4954H15.7809C15.6085%2015.092%2015.3488%2015.524%2015.0318%2015.8415%2014.403%2016.4629%2013.4495%2017.1509%2011.7008%2017.1509%209.04835%2017.1509%206.96482%2015.0197%206.96482%2012.341%206.96482%209.66239%209.04835%207.53119%2011.7008%207.53119%2013.137%207.53119%2014.176%208.09189%2014.9578%208.82348L15.4876%209.31922%2016.0006%208.80619%2017.4706%207.33616z%22/%3E%3Cpath%20d%3D%22M24.8656%2020.7286C27.9546%2020.7286%2030.4692%2018.3094%2030.4692%2015.0594%2030.4692%2011.7913%2027.953%209.39011%2024.8656%209.39011%2021.7783%209.39011%2019.2621%2011.7913%2019.2621%2015.0594c0%203.25%202.514499999999998%205.6692%205.6035%205.6692zM24.8656%2012.8282C25.8796%2012.8282%2026.8422%2013.6652%2026.8422%2015.0594%2026.8422%2016.4399%2025.8769%2017.2905%2024.8656%2017.2905%2023.8557%2017.2905%2022.8891%2016.4331%2022.8891%2015.0594%2022.8891%2013.672%2023.853%2012.8282%2024.8656%2012.8282z%22/%3E%3Cpath%20d%3D%22M35.7511%2017.2905v0H35.7469C34.737%2017.2905%2033.7703%2016.4331%2033.7703%2015.0594%2033.7703%2013.672%2034.7343%2012.8282%2035.7469%2012.8282%2036.7608%2012.8282%2037.7234%2013.6652%2037.7234%2015.0594%2037.7234%2016.4439%2036.7554%2017.2962%2035.7511%2017.2905zM35.7387%2020.7286C38.8277%2020.7286%2041.3422%2018.3094%2041.3422%2015.0594%2041.3422%2011.7913%2038.826%209.39011%2035.7387%209.39011%2032.6513%209.39011%2030.1351%2011.7913%2030.1351%2015.0594%2030.1351%2018.3102%2032.6587%2020.7286%2035.7387%2020.7286z%22/%3E%3Cpath%20d%3D%22M51.953%2010.4357V9.68573H48.3999V9.80826C47.8499%209.54648%2047.1977%209.38187%2046.4808%209.38187%2043.5971%209.38187%2041.0168%2011.8998%2041.0168%2015.0758%2041.0168%2017.2027%2042.1808%2019.0237%2043.8201%2019.9895L43.7543%2020.0168%2041.8737%2020.797%2041.1808%2021.0844%2041.4684%2021.7772C42.0912%2023.2776%2043.746%2025.1469%2046.5219%2025.1469%2047.9324%2025.1469%2049.3089%2024.7324%2050.3359%2023.7376%2051.3691%2022.7367%2051.953%2021.2411%2051.953%2019.2723v-8.8366zm-7.2194%209.9844L44.7334%2020.4196C45.2886%2020.6201%2045.878%2020.7286%2046.4808%2020.7286%2047.1616%2020.7286%2047.7866%2020.5819%2048.3218%2020.3395%2048.2342%2020.7286%2048.0801%2021.0105%2047.8966%2021.2077%2047.6154%2021.5099%2047.1764%2021.7088%2046.5219%2021.7088%2045.61%2021.7088%2045.0018%2021.0612%2044.7336%2020.4201zM46.6697%2012.8282C47.6419%2012.8282%2048.5477%2013.6765%2048.5477%2015.084%2048.5477%2016.4636%2047.6521%2017.2987%2046.6697%2017.2987%2045.6269%2017.2987%2044.6767%2016.4249%2044.6767%2015.084%2044.6767%2013.7086%2045.6362%2012.8282%2046.6697%2012.8282zM55.7387%205.22083v-.75H52.0788V20.4412H55.7387V5.220829999999999z%22/%3E%3Cpath%20d%3D%22M63.9128%2016.0614L63.2945%2015.6492%2062.8766%2016.2637C62.4204%2016.9346%2061.8664%2017.3069%2061.0741%2017.3069%2060.6435%2017.3069%2060.3146%2017.2088%2060.0544%2017.0447%2059.9844%2017.0006%2059.9161%2016.9496%2059.8498%2016.8911L65.5497%2014.5286%2066.2322%2014.2456%2065.9596%2013.5589%2065.7406%2013.0075C65.2878%2011.8%2063.8507%209.39832%2060.8278%209.39832%2057.8445%209.39832%2055.5034%2011.7619%2055.5034%2015.0676%2055.5034%2018.2151%2057.8256%2020.7369%2061.0659%2020.7369%2063.6702%2020.7369%2065.177%2019.1378%2065.7942%2018.2213L66.2152%2017.5963%2065.5882%2017.1783%2063.9128%2016.0614zM61.3461%2012.8511L59.4108%2013.6526C59.7903%2013.0783%2060.4215%2012.7954%2060.9017%2012.7954%2061.067%2012.7954%2061.2153%2012.8161%2061.3461%2012.8511z%22/%3E%3C/g%3E%3Cpath%20d%3D%22M11.7008%2019.9868C7.48776%2019.9868%203.94818%2016.554%203.94818%2012.341%203.94818%208.12803%207.48776%204.69522%2011.7008%204.69522%2014.0331%204.69522%2015.692%205.60681%2016.9403%206.80583L15.4703%208.27586C14.5751%207.43819%2013.3597%206.78119%2011.7008%206.78119%208.62108%206.78119%206.21482%209.26135%206.21482%2012.341%206.21482%2015.4207%208.62108%2017.9009%2011.7008%2017.9009%2013.6964%2017.9009%2014.8297%2017.0961%2015.5606%2016.3734%2016.1601%2015.7738%2016.5461%2014.9197%2016.6939%2013.7454h-4.9931V11.6512h7.0298C18.8045%2012.0207%2018.8456%2012.4724%2018.8456%2012.957%2018.8456%2014.5255%2018.4186%2016.4637%2017.0389%2017.8434%2015.692%2019.2395%2013.9838%2019.9868%2011.7008%2019.9868z%22%20fill%3D%22%234285F4%22/%3E%3Cpath%20d%3D%22M29.7192%2015.0594C29.7192%2017.8927%2027.5429%2019.9786%2024.8656%2019.9786%2022.1884%2019.9786%2020.0121%2017.8927%2020.0121%2015.0594%2020.0121%2012.2096%2022.1884%2010.1401%2024.8656%2010.1401%2027.5429%2010.1401%2029.7192%2012.2096%2029.7192%2015.0594zM27.5922%2015.0594C27.5922%2013.2855%2026.3274%2012.0782%2024.8656%2012.0782S22.1391%2013.2937%2022.1391%2015.0594C22.1391%2016.8086%2023.4038%2018.0405%2024.8656%2018.0405S27.5922%2016.8168%2027.5922%2015.0594z%22%20fill%3D%22%23E94235%22/%3E%3Cpath%20d%3D%22M40.5922%2015.0594C40.5922%2017.8927%2038.4159%2019.9786%2035.7387%2019.9786%2033.0696%2019.9786%2030.8851%2017.8927%2030.8851%2015.0594%2030.8851%2012.2096%2033.0614%2010.1401%2035.7387%2010.1401%2038.4159%2010.1401%2040.5922%2012.2096%2040.5922%2015.0594zM38.4734%2015.0594C38.4734%2013.2855%2037.2087%2012.0782%2035.7469%2012.0782%2034.2851%2012.0782%2033.0203%2013.2937%2033.0203%2015.0594%2033.0203%2016.8086%2034.2851%2018.0405%2035.7469%2018.0405%2037.2087%2018.0487%2038.4734%2016.8168%2038.4734%2015.0594z%22%20fill%3D%22%23FABB05%22/%3E%3Cpath%20d%3D%22M51.203%2010.4357v8.8366C51.203%2022.9105%2049.0595%2024.3969%2046.5219%2024.3969%2044.132%2024.3969%2042.7031%2022.7955%2042.161%2021.4897L44.0417%2020.7095C44.3784%2021.5143%2045.1997%2022.4588%2046.5219%2022.4588%2048.1479%2022.4588%2049.1499%2021.4487%2049.1499%2019.568V18.8617H49.0759C48.5914%2019.4612%2047.6552%2019.9786%2046.4808%2019.9786%2044.0171%2019.9786%2041.7668%2017.8352%2041.7668%2015.0758%2041.7668%2012.3%2044.0253%2010.1319%2046.4808%2010.1319%2047.6552%2010.1319%2048.5914%2010.6575%2049.0759%2011.2323H49.1499V10.4357H51.203zM49.2977%2015.084C49.2977%2013.3512%2048.1397%2012.0782%2046.6697%2012.0782%2045.175%2012.0782%2043.9267%2013.3429%2043.9267%2015.084%2043.9267%2016.8004%2045.175%2018.0487%2046.6697%2018.0487%2048.1397%2018.0487%2049.2977%2016.8004%2049.2977%2015.084z%22%20fill%3D%22%234285F4%22/%3E%3Cpath%20d%3D%22M54.9887%205.22083V19.6912H52.8288V5.220829999999999H54.9887z%22%20fill%3D%22%2334A853%22/%3E%3Cpath%20d%3D%22M63.4968%2016.6854L65.1722%2017.8023C64.6301%2018.6072%2063.3244%2019.9869%2061.0659%2019.9869%2058.2655%2019.9869%2056.2534%2017.827%2056.2534%2015.0676%2056.2534%2012.1439%2058.2901%2010.1483%2060.8278%2010.1483%2063.3818%2010.1483%2064.6301%2012.1768%2065.0408%2013.2773L65.2625%2013.8357%2058.6843%2016.5623C59.1853%2017.5478%2059.9737%2018.0569%2061.0741%2018.0569%2062.1746%2018.0569%2062.9384%2017.5067%2063.4968%2016.6854zM58.3312%2014.9115L62.7331%2013.0884C62.4867%2012.4724%2061.764%2012.0454%2060.9017%2012.0454%2059.8012%2012.0454%2058.2737%2013.0145%2058.3312%2014.9115z%22%20fill%3D%22%23E94235%22/%3E%3C/svg%3E"></div></div><!----> <div class="toggle-container svelte-crvia7"><div class="barMenu floatingMapCloseMenu svelte-crvia7"><button class="standardButton white floatingButton svelte-crvia7" aria-label="Toggle minimap"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-arrow-down"><!----><path d="M12 5v14"></path><!----><path d="m19 12-7 7-7-7"></path><!----><!----></svg><!----></button></div> <div class="resize-handle barMenu svelte-crvia7"><button class="standardButton white centerButton svelte-crvia7" aria-label="Resize minimap"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide-icon lucide lucide-arrow-up-left"><!----><path d="M7 17V7h10"></path><!----><path d="M17 17 7 7"></path><!----><!----></svg><!----></button></div><!----></div><!----> <div id="map" role="region" tabindex="0" class="svelte-13da2aa leaflet-container leaflet-touch leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" style="max-height: 100%; position: relative;"><!----><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(-88px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 20; transform: translate3d(0px, 0px, 0px) scale(1);"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=8&amp;y=11&amp;z=5&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(163px, -165px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=8&amp;y=12&amp;z=5&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(163px, 91px, 0px); opacity: 1;"><img alt="" src="https://mt2.google.com/vt/lyrs=m&amp;x=7&amp;y=11&amp;z=5&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-93px, -165px, 0px); opacity: 1;"><img alt="" src="https://mt0.google.com/vt/lyrs=m&amp;x=9&amp;y=11&amp;z=5&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(419px, -165px, 0px); opacity: 1;"><img alt="" src="https://mt3.google.com/vt/lyrs=m&amp;x=7&amp;y=12&amp;z=5&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-93px, 91px, 0px); opacity: 1;"><img alt="" src="https://mt1.google.com/vt/lyrs=m&amp;x=9&amp;y=12&amp;z=5&amp;hl=en&amp;scale=2" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(419px, 91px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><svg pointer-events="none" class="leaflet-zoom-animated" width="390" height="287" viewBox="56 -24 390 287" style="transform: translate3d(56px, -24px, 0px);"><g></g></svg></div><div class="leaflet-pane leaflet-shadow-pane"></div><div class="leaflet-pane leaflet-marker-pane"><img src="/img/pins/player_pin0.png" class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" alt="Marker" tabindex="0" role="button" style="margin-left: -17.5px; margin-top: -34px; width: 35px; height: 35px; transform: translate3d(251px, 119px, 0px); z-index: 119;"></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(2135.5px, 3100.5px, 0px) scale(16);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"><div class="leaflet-control-layers leaflet-control" aria-haspopup="true"><a class="leaflet-control-layers-toggle" href="#" title="Layers" role="button"></a><section class="leaflet-control-layers-list"><div class="leaflet-control-layers-base"><label><span><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers_30" checked="checked"><span> Standard</span></span></label><label><span><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers_30"><span> Terrain</span></span></label><label><span><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers_30"><span> Satellite</span></span></label></div><div class="leaflet-control-layers-separator" style="display: none;"></div><div class="leaflet-control-layers-overlays"></div></section></div></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"><div class="leaflet-control-attribution leaflet-control"><a href="https://leafletjs.com" title="A JavaScript library for interactive maps"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" class="leaflet-attribution-flag"><path fill="#4C7BE1" d="M0 0h12v4H0z"></path><path fill="#FFD500" d="M0 4h12v3H0z"></path><path fill="#E0BC00" d="M0 7h12v1H0z"></path></svg> Leaflet</a></div></div></div></div><!----> <!----><div class="barMenu map-mode-indicator svelte-oa2pza" style=""><div class="map-mode-text-container of-left of-right svelte-oa2pza" style="mask-image: linear-gradient(to right, rgb(0, 0, 0) 0%, rgb(0, 0, 0) 2%, rgb(0, 0, 0) 3.52%, rgb(0, 0, 0) 4.96%, rgb(0, 0, 0) 6.48%, rgb(0, 0, 0) 8%, black 8.96%, black 91.04%, rgb(0, 0, 0) 92%, rgb(0, 0, 0) 93.52%, rgb(0, 0, 0) 95.04%, rgb(0, 0, 0) 96.48%, rgb(0, 0, 0) 98%, rgb(0, 0, 0) 100%);"><p class="svelte-oa2pza">Singleplayer</p> <span class="chip info-tag svelte-y4103d muted-opacity" role=""><span class="svelte-y4103d"><!----><img class="map-icon svelte-oa2pza" src="/img/maps_icon.png" alt="Maps">World<!----></span></span><!----> <!----> <!----></div> <!----></div><!----><!----></div><!----> <!----><!----> <div id="bottomBar" class="bottomBar svelte-1e81imw"><div class="bottomLeftMenu svelte-1e81imw"><div class="barMenu"><button class="standardButton white"><img id="resetButtonImg" src="/img/return_icon.png" alt="Return to start position" class="svelte-1e81imw"> <span class="resetButtonText svelte-1e81imw">Return</span></button> <!----></div></div> <div class="barMenu bottomRightMenu svelte-1e81imw"><div id="confirmButton" class="standardButton confirmButton white svelte-1e81imw confirmActive" style=""><button class="helpButton standardButton white svelte-1e81imw innerConfirmButtonDisabled">?</button> <p id="guessText" class="svelte-1e81imw">Guess<!----></p></div></div><!----></div> <div class="gameplayAdArea barMenu svelte-1e81imw"><div class="gameplayAd svelte-1e81imw" id="gameplayAd" data-fuse="Game_incontent_1"></div> <p class="noAdvertsText svelte-1e81imw">Ads keep OpenGuessr free.</p></div><!----> <!----><!----><!----><!----> <!----><!----> <div id="svelte-announcer" aria-live="assertive" aria-atomic="true" style="position: absolute; left: 0; top: 0; clip: rect(0 0 0 0); clip-path: inset(50%); overflow: hidden; white-space: nowrap; width: 1px; height: 1px">OpenGuessr - Free GeoGuessr Alternative<!----></div><!----></div>
+<script defer="" src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;a6010c1acb25489aa2d52614f4879b85&quot;,&quot;server_timing&quot;:{&quot;name&quot;:{&quot;cfCacheStatus&quot;:true,&quot;cfEdge&quot;:true,&quot;cfExtPri&quot;:true,&quot;cfL4&quot;:true,&quot;cfOrigin&quot;:true,&quot;cfSpeedBrain&quot;:true},&quot;location_startswith&quot;:null}}" crossorigin="anonymous"></script>
+
+
+<div id="og-card" style="inset: 223px auto auto 103.359px; display: flex;">
+            <div id="og-header">
+                <span id="og-title">📍 Konum tespit edildi</span>
+                <button id="og-close" title="Kapat">✕</button>
+            </div>
+            <div id="og-coords">40.0415468,  -86.1175538</div>
+            <button id="og-open">🗺️ Google Maps'te Aç</button>
+            <div id="og-mode-row">
+                <button class="og-mode-btn" data-mode="auto">🤖 Oto-Oyun</button>
+                <button class="og-mode-btn" data-mode="xp">⚡ XP Farm</button>
+                <button class="og-mode-btn active" data-mode="elo">🏆 ELO</button>
+            </div>
+            <div id="og-panel-auto" style="display: none;">
+                <div id="og-auto-row">
+                    <input type="checkbox" id="og-auto-toggle">
+                    <label id="og-auto-label" for="og-auto-toggle">Aktif</label>
+                </div>
+                <div id="og-delays" data-protonpass-form="">
+                    <div class="og-delay-row">
+                        <label>🖱️ Guess (sn)</label>
+                        <input class="og-delay-input" id="og-g-min" type="number" min="0.5" max="30" step="0.5" value="2.5">
+                        <span class="og-delay-sep">–</span>
+                        <input class="og-delay-input" id="og-g-max" type="number" min="0.5" max="30" step="0.5" value="6.0">
+                    </div>
+                    <div class="og-delay-row">
+                        <label>▶️ Continue (sn)</label>
+                        <input class="og-delay-input" id="og-c-min" type="number" min="0.5" max="30" step="0.5" value="3.0">
+                        <span class="og-delay-sep">–</span>
+                        <input class="og-delay-input" id="og-c-max" type="number" min="0.5" max="30" step="0.5" value="6.5">
+                    </div>
+                </div>
+            </div>
+            <div id="og-panel-xp" style="display: none;">
+                <div class="og-delay-row" style="flex-direction:column;align-items:flex-start;gap:3px;">
+                    <label style="width:auto;color:#9ab4f0;font-size:11px;">Bearer Token</label>
+                    <textarea id="og-xp-token" rows="2" placeholder="eyJhbGci…"></textarea>
+                </div>
+                <div class="og-delay-row">
+                    <label>Kullanıcı ID</label>
+                    <input class="og-delay-input" id="og-xp-userid" type="number" placeholder="2730639" style="width:90px;">
+                </div>
+                <div class="og-delay-row">
+                    <label>Aralık (sn)</label>
+                    <input class="og-delay-input" id="og-xp-interval" type="number" min="1" max="60" step="0.5" value="5">
+                </div>
+                <button id="og-xp-start">▶ Başlat</button>
+            </div>
+            <div id="og-panel-elo" style="" data-protonpass-form="">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="og-elo-toggle">
+                    <label for="og-elo-toggle" style="font-size:12px;color:#9ab4f0;font-weight:600;cursor:pointer;flex:1">WS ile Otomatik Kazan</label>
+                </div>
+                <div class="og-delay-row">
+                    <label>🤔 Düşünme (sn)</label>
+                    <input class="og-delay-input" id="og-elo-think-min" type="number" min="0" max="120" step="0.5" value="6.0">
+                    <span class="og-delay-sep">–</span>
+                    <input class="og-delay-input" id="og-elo-think-max" type="number" min="0" max="120" step="0.5" value="10.0">
+                </div>
+                <div class="og-delay-row">
+                    <label>🎯 Sapma (m)</label>
+                    <input class="og-delay-input" id="og-elo-radius" type="number" min="0" max="50000" step="100" value="1000" style="width:72px;">
+                </div>
+                <div id="og-elo-status">📍 Lokasyon alındı, timer bekleniyor…</div>
+                <div style="font-size:10px;color:#788;line-height:1.5;">
+                    Duello odasına gir, her tur başında tam koordinatı WebSocket üzerinden otomatik gönderir. Rakibinin token'ına gerek yok.
+                </div>
+            </div>
+            <div id="og-auto-status">📍 Lokasyon alındı, timer bekleniyor…</div>
+        </div><protonpass-root-21dd data-protonpass-role="root" data-protonpass-theme="os"></protonpass-root-21dd><div id="playlight-sdk-container" class="playlight-sdk playlight-sdk-container"><!----><!----> <!----><!----> <!----><!----> <!----></div></body><chatgpt-sidebar data-rendered="true" data-gpts-theme="light"></chatgpt-sidebar></html>

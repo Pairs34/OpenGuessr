@@ -262,7 +262,6 @@
             <button id="og-open">🗺️ Google Maps'te Aç</button>
             <div id="og-mode-row">
                 <button class="og-mode-btn active" data-mode="auto">🤖 Oto-Oyun</button>
-                <button class="og-mode-btn" data-mode="duel">⚔️ Duello</button>
                 <button class="og-mode-btn" data-mode="xp">⚡ XP Farm</button>
                 <button class="og-mode-btn" data-mode="elo">🏆 ELO</button>
             </div>
@@ -286,15 +285,6 @@
                     </div>
                 </div>
             </div>
-            <div id="og-panel-duel" style="display:none">
-                <div id="og-duel-auto-row" style="display:flex;align-items:center;gap:8px;padding-top:8px;">
-                    <input type="checkbox" id="og-duel-toggle">
-                    <label id="og-duel-label" for="og-duel-toggle" style="font-size:12px;color:#9ab4f0;font-weight:600;cursor:pointer;flex:1">Otomatik Oyna</label>
-                </div>
-                <div style="font-size:10px;color:#788;margin-top:6px;line-height:1.5">
-                    Duello odasına girilince pin atıp Guess'e basar, sonra Play again ile döngü devam eder.
-                </div>
-            </div>
             <div id="og-panel-xp">
                 <div class="og-delay-row" style="flex-direction:column;align-items:flex-start;gap:3px;">
                     <label style="width:auto;color:#9ab4f0;font-size:11px;">Bearer Token</label>
@@ -314,6 +304,16 @@
                 <div style="display:flex;align-items:center;gap:8px;">
                     <input type="checkbox" id="og-elo-toggle">
                     <label for="og-elo-toggle" style="font-size:12px;color:#9ab4f0;font-weight:600;cursor:pointer;flex:1">WS ile Otomatik Kazan</label>
+                </div>
+                <div class="og-delay-row">
+                    <label>🤔 Düşünme (sn)</label>
+                    <input class="og-delay-input" id="og-elo-think-min" type="number" min="0" max="120" step="0.5" value="6.0">
+                    <span class="og-delay-sep">–</span>
+                    <input class="og-delay-input" id="og-elo-think-max" type="number" min="0" max="120" step="0.5" value="10.0">
+                </div>
+                <div class="og-delay-row">
+                    <label>🎯 Sapma (m)</label>
+                    <input class="og-delay-input" id="og-elo-radius" type="number" min="0" max="50000" step="100" value="1000" style="width:72px;">
                 </div>
                 <div id="og-elo-status"></div>
                 <div style="font-size:10px;color:#788;line-height:1.5;">
@@ -345,17 +345,19 @@
             document.getElementById(id).addEventListener('change', saveDelays);
         });
 
-        // Duello toggle
-        document.getElementById('og-duel-toggle').addEventListener('change', function () {
-            if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(this.checked, 'duel');
-            chrome.storage.local.set({ ogDuelEnabled: this.checked });
-        });
+        // Duello toggle kaldırıldı — ELO modu zaten /duel URL'sinde otomatik aktif olur.
 
         // ELO Farm toggle
         document.getElementById('og-elo-toggle').addEventListener('change', function () {
             window.dispatchEvent(new CustomEvent('og-elofarm', { detail: { enabled: this.checked } }));
             chrome.storage.local.set({ ogEloEnabled: this.checked });
         });
+
+        // ELO düşünme süresi inputları
+        ['og-elo-think-min','og-elo-think-max'].forEach(id => {
+            document.getElementById(id).addEventListener('change', saveEloThink);
+        });
+        document.getElementById('og-elo-radius').addEventListener('change', saveEloRadius);
 
         // ELO Farm durum güncellemesi (map-main.js MAIN world'den gelir)
         window.addEventListener('og-elofarm-status', function (e) {
@@ -368,17 +370,12 @@
         function switchMode(mode) {
             card.querySelectorAll('.og-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
             document.getElementById('og-panel-auto').style.display = mode === 'auto' ? '' : 'none';
-            document.getElementById('og-panel-duel').style.display = mode === 'duel' ? '' : 'none';
             document.getElementById('og-panel-xp').style.display   = mode === 'xp'   ? '' : 'none';
             document.getElementById('og-panel-elo').style.display  = mode === 'elo'  ? '' : 'none';
             chrome.storage.local.set({ ogMode: mode });
 
             if (mode !== 'auto') {
                 const t = document.getElementById('og-auto-toggle');
-                if (t && t.checked) { t.checked = false; if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(false); }
-            }
-            if (mode !== 'duel') {
-                const t = document.getElementById('og-duel-toggle');
                 if (t && t.checked) { t.checked = false; if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(false); }
             }
             if (mode !== 'elo') {
@@ -483,8 +480,25 @@
         chrome.storage.local.set({ ogDelays: { gMin, gMax, cMin, cMax } });
     }
 
+    function saveEloThink() {
+        let tMin = parseFloat(document.getElementById('og-elo-think-min').value);
+        let tMax = parseFloat(document.getElementById('og-elo-think-max').value);
+        if (!isFinite(tMin) || tMin < 0) tMin = 6.0;
+        if (!isFinite(tMax) || tMax < 0) tMax = 10.0;
+        if (tMax < tMin) tMax = tMin;
+        window.ogEloThink = { minMs: tMin * 1000, maxMs: tMax * 1000 };
+        chrome.storage.local.set({ ogEloThink: { min: tMin, max: tMax } });
+    }
+
+    function saveEloRadius() {
+        let r = parseFloat(document.getElementById('og-elo-radius').value);
+        if (!isFinite(r) || r < 0) r = 1000;
+        window.ogEloRadiusM = r;
+        chrome.storage.local.set({ ogEloRadius: r });
+    }
+
     function loadFromStorage() {
-        chrome.storage.local.get(['ogDelays', 'ogAutoEnabled', 'ogMode', 'ogXP'], function (data) {
+        chrome.storage.local.get(['ogDelays', 'ogAutoEnabled', 'ogMode', 'ogXP', 'ogEloThink', 'ogEloRadius'], function (data) {
             // Gecikmeleri yükle
             if (data.ogDelays) {
                 const d = data.ogDelays;
@@ -495,15 +509,27 @@
             }
             saveDelays();
 
+            // ELO düşünme süresi
+            if (data.ogEloThink) {
+                if (typeof data.ogEloThink.min === 'number') document.getElementById('og-elo-think-min').value = data.ogEloThink.min;
+                if (typeof data.ogEloThink.max === 'number') document.getElementById('og-elo-think-max').value = data.ogEloThink.max;
+            }
+            saveEloThink();
+
+            // ELO sapma yarıçapı (metre)
+            if (typeof data.ogEloRadius === 'number') {
+                document.getElementById('og-elo-radius').value = data.ogEloRadius;
+            }
+            saveEloRadius();
+
             // Mod — duello URL'sindeyse elo farm, değilse kaydedilen mod (elo kaydedilmişse sıfırla)
             const isDuelUrl = location.pathname.includes('/duel') || location.href.includes('/duel');
-            const savedMode = data.ogMode === 'elo' ? 'auto' : (data.ogMode || 'auto');
+            const savedMode = (data.ogMode === 'elo' || data.ogMode === 'duel') ? 'auto' : (data.ogMode || 'auto');
             const mode = isDuelUrl ? 'elo' : savedMode;
             document.querySelectorAll('.og-mode-btn').forEach(b => {
                 b.classList.toggle('active', b.dataset.mode === mode);
             });
             document.getElementById('og-panel-auto').style.display = mode === 'auto' ? '' : 'none';
-            document.getElementById('og-panel-duel').style.display = mode === 'duel' ? '' : 'none';
             document.getElementById('og-panel-xp').style.display   = mode === 'xp'   ? '' : 'none';
             document.getElementById('og-panel-elo').style.display  = mode === 'elo'  ? '' : 'none';
 
@@ -530,14 +556,7 @@
                     if (currentLat !== null) window.onPinPlaced(currentLat, currentLng);
                 }
             }
-            // Duello otomatik aktif
-            if (mode === 'duel') {
-                const t = document.getElementById('og-duel-toggle');
-                if (t && !t.checked) {
-                    t.checked = true;
-                    if (typeof window.toggleAutoPlay === 'function') window.toggleAutoPlay(true, 'duel');
-                }
-            }
+            // Duello otomatik aktif — KALDIRILDI
             // ELO Farm otomatik aktif (sadece duel URL'sinde)
             if (mode === 'elo' && isDuelUrl) {
                 const t = document.getElementById('og-elo-toggle');

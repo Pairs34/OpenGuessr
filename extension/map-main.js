@@ -139,10 +139,137 @@
         let eloPendingLat = null;   // timerStart'ı bekleyen lokasyon
         let eloPendingLon = null;
         let eloTimerReady = false;  // countdownActive:false geldi mi
+        let eloNavigating = false;  // Exit→PlayAgain akışı sürüyor mu (çift tetiklenmeyi önler)
+        let eloGameId     = 0;      // her yeni oyun/tur sıfırlanır; sendEloGuess stale kontrolü için
 
         function eloStatus(text) {
             window.dispatchEvent(new CustomEvent('og-elofarm-status', { detail: { text } }));
         }
+
+        // Görünür ve metni eşleşen butonu bul
+        function findVisibleButton(textRegex, extraSelector) {
+            const sel = extraSelector || 'button';
+            const btns = document.querySelectorAll(sel);
+            for (const b of btns) {
+                if (b.offsetParent === null) continue;          // gizli
+                if (b.disabled) continue;
+                const t = (b.textContent || '').trim();
+                if (textRegex.test(t)) return b;
+            }
+            return null;
+        }
+
+        // Oyun bitince: önce "Exit" butonuna bas, ardından açılan popuphoulder'daki "Play again"'e bas.
+        // Eğer "Play again" popup'ı zaten açıksa (showResult handler geç kaldıysa) direkt tıkla.
+        async function clickExitThenPlayAgain() {
+            // 0) Play again zaten görünüyor mu? (gameEnded öncesinde popup açılmış olabilir)
+            const earlyPlayAgain = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
+            if (earlyPlayAgain) {
+                earlyPlayAgain.click();
+                eloStatus('🔁 Play again tıklandı (direkt)');
+                eloNavigating = false;
+                return;
+            }
+
+            // 1) Exit butonunu bekle ve tıkla (en fazla 20sn)
+            let exitClicked = false;
+            for (let i = 0; i < 80 && eloEnabled; i++) {
+                // Exit butonunu ara (.roundEndButton öncelikli, fallback tüm butonlar)
+                const exitBtn = findVisibleButton(/^\s*exit\s*$/i, 'button.roundEndButton, button.standardButton, button');
+                if (exitBtn) {
+                    exitBtn.click();
+                    eloStatus('🚪 Exit tıklandı');
+                    exitClicked = true;
+                    break;
+                }
+                // Beklerken Play again çıktı mı? (race condition fallback)
+                const racePA = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
+                if (racePA) {
+                    racePA.click();
+                    eloStatus('🔁 Play again tıklandı (race fallback)');
+                    eloNavigating = false;
+                    return;
+                }
+                await new Promise(r => setTimeout(r, 250));
+            }
+            if (!exitClicked) {
+                eloStatus('⚠️ Exit butonu bulunamadı');
+                eloNavigating = false;
+                return;
+            }
+
+            // 2) Play again butonunu bekle ve tıkla — popupHolder içindeki buton (en fazla 30sn)
+            for (let i = 0; i < 120 && eloEnabled; i++) {
+                const again = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
+                if (again) {
+                    again.click();
+                    eloStatus('🔁 Play again tıklandı');
+                    eloNavigating = false;
+                    return;
+                }
+                await new Promise(r => setTimeout(r, 250));
+            }
+            eloStatus('⚠️ Play again butonu bulunamadı');
+            eloNavigating = false;
+        }
+
+        /* ── DOM Watcher ───────────────────────────────────────────────────
+         * Her 1sn'de bir sayfayı tarayarak WS mesajları gelmese bile
+         * Exit / Play again / Waiting ekranlarını yakalar ve uygun aksiyonu alır.
+         * Bu sayede rakip tur ortasında çıksa veya WS mesajı kaçsa bile döngü devam eder.
+         * ─────────────────────────────────────────────────────────────────── */
+        function startEloDomWatcher() {
+            setInterval(() => {
+                if (!eloEnabled) return;
+
+                // ── Matchmaking bekleme ekranı ──────────────────────────────
+                // h2.multiplayer-matchmaking-status "Waiting for players..."
+                const matchmakingH2 = document.querySelector('h2.multiplayer-matchmaking-status');
+                if (matchmakingH2 && matchmakingH2.offsetParent !== null) {
+                    eloStatus('⏳ Rakip bekleniyor…');
+                    // Tur state'ini sıfırla — yeni oyun başlamak üzere (sendEloGuess iptal)
+                    eloGameId++;
+                    eloGuessing   = false;
+                    eloPendingLat = null;
+                    eloPendingLon = null;
+                    eloTimerReady = false;
+                    eloNavigating = false;
+                    return;
+                }
+
+                // ── Play again popup'ı ──────────────────────────────────────
+                // .popupHolder görünür VE içinde "Play again" butonu var
+                const popup = document.querySelector('.popupHolder');
+                if (popup && popup.offsetParent !== null && !eloNavigating) {
+                    const pa = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
+                    if (pa) {
+                        eloNavigating = true;
+                        pa.click();
+                        eloStatus('🔁 Play again tıklandı (DOM watcher)');
+                        return;
+                    }
+                }
+
+                // ── Exit butonu (tur-sonu / oyun-sonu overlay) ──────────────
+                // Rakip tur ortasında çıkarsa veya gameEnded WS mesajı kaçarsa
+                if (!eloNavigating) {
+                    const exitBtn = findVisibleButton(/^\s*exit\s*$/i, 'button.roundEndButton, button.standardButton');
+                    if (exitBtn) {
+                        // Tur state'ini sıfırla — güvenli tahmin iptal
+                        eloGuessing   = false;
+                        eloPendingLat = null;
+                        eloPendingLon = null;
+                        eloTimerReady = false;
+                        eloNavigating = true;
+                        eloStatus('🏁 Oyun bitti — Exit tıklandı (DOM watcher)');
+                        eloRound = 0;
+                        clickExitThenPlayAgain();
+                    }
+                }
+
+            }, 1000);
+        }
+        startEloDomWatcher();
 
         window.addEventListener('og-elofarm', function (e) {
             eloEnabled    = !!(e.detail && e.detail.enabled);
@@ -150,23 +277,53 @@
             eloPendingLat = null;
             eloPendingLon = null;
             eloTimerReady = false;
+            eloNavigating = false;
+            eloGameId++;  // tüm bekleyen async işlemleri iptal et
             eloRound      = 0;
-            eloStatus(eloEnabled ? '⚔️ WS dinleniyor…' : '');
+            if (eloEnabled) {
+                const isMatchmaking = location.pathname.includes('/multiplayer/duel');
+                eloStatus(isMatchmaking ? '⏳ Rakip bekleniyor…' : '⚔️ WS dinleniyor…');
+            } else {
+                eloStatus('');
+            }
         });
 
         async function sendEloGuess(wsSend, lat, lon) {
             if (eloGuessing) return;   // yarış koşulunu önle
             eloGuessing = true;        // delay öncesinde işaretle
-            // İnsansı bekleme: 6–10sn arası random (kullanıcı düşünüyormuş gibi)
-            const _thinkMs = 6000 + Math.random() * 4000;
-            eloStatus(`🤔 Düşünüyor… (${(_thinkMs / 1000).toFixed(1)}s)`);
+            const _myGameId = ++eloGameId; // bu çağrıya ait snapshot — stale kontrolü için
+            // İnsansı bekleme — UI'dan ayarlanabilir (varsayılan 6–10sn)
+            const _think = (window.ogEloThink && typeof window.ogEloThink.minMs === 'number')
+                ? window.ogEloThink
+                : { minMs: 6000, maxMs: 10000 };
+            const _min = Math.max(0, _think.minMs);
+            const _max = Math.max(_min, _think.maxMs);
+            const _thinkMs = _min + Math.random() * (_max - _min);
+            // Geri sayım: her 250ms'de status güncelle
+            const _deadline = Date.now() + _thinkMs;
+            eloStatus(`🤔 Düşünüyor… ${(_thinkMs / 1000).toFixed(1)}s`);
+            const _tickId = setInterval(() => {
+                // Oyun bitti ya da iptal edildiyse interval'i durdur
+                if (!eloEnabled || eloGameId !== _myGameId) { clearInterval(_tickId); return; }
+                const _left = Math.max(0, (_deadline - Date.now()) / 1000);
+                eloStatus(`🤔 Düşünüyor… ${_left.toFixed(1)}s`);
+                if (_left <= 0) clearInterval(_tickId);
+            }, 250);
             await new Promise(res => setTimeout(res, _thinkMs));
-            if (!eloEnabled) return;
+            clearInterval(_tickId);
+            // Oyun bitti veya yeni tur başladıysa bu tahmin iptal
+            if (!eloEnabled || eloGameId !== _myGameId) {
+                eloGuessing = false;
+                return;
+            }
             eloRound++;
 
-            // ~1km random offset — inandırıcılık için (uniform daire dağılımı)
+            // Sapma yarıçapı — UI'dan ayarlanabilir (varsayılan 1000m, uniform daire dağılımı)
+            const _radiusM = (typeof window.ogEloRadiusM === 'number' && window.ogEloRadiusM >= 0)
+                ? window.ogEloRadiusM
+                : 1000;
             const _angle = Math.random() * 2 * Math.PI;
-            const _dist  = Math.sqrt(Math.random()) * 1000; // 0–1000m
+            const _dist  = Math.sqrt(Math.random()) * _radiusM;
             const gLat = lat + (_dist * Math.cos(_angle)) / 111320;
             const gLon = lon + (_dist * Math.sin(_angle)) / (111320 * Math.cos(lat * Math.PI / 180));
 
@@ -209,6 +366,7 @@
                         eloPendingLon = lon;
                         eloGuessing   = false; // yeni tur
                         eloTimerReady = false;
+                        eloGameId++;           // önceki bekleyen sendEloGuess varsa iptal et
                         eloStatus(`📍 Lokasyon alındı, timer bekleniyor…`);
                     }
                 }
@@ -232,7 +390,8 @@
 
                 if (key === 'showResult' && value === true) {
                     eloGuessing = false; // bir sonraki tur için hazır
-                    // Sonuç overlay'ini otomatik kapat (Continue / bottomButton)
+                    // Tur-arası sonuç overlay'ini kapat — sadece Continue/Next butonlarına bas,
+                    // "Play again" butonunu ATLA (o gameEnded handler'ı tarafından işlenir).
                     if (eloEnabled) {
                         let _tries = 0;
                         const _poll = setInterval(() => {
@@ -240,24 +399,33 @@
                             const _sels = ['.popupHolder button.bottomButton', '#nextRound', 'button.bottomButton'];
                             for (const _sel of _sels) {
                                 const _btn = document.querySelector(_sel);
-                                if (_btn && _btn.offsetParent !== null) {
-                                    _btn.click();
-                                    eloStatus('▶ Continue tıklandı');
-                                    clearInterval(_poll);
-                                    return;
-                                }
+                                if (!_btn || _btn.offsetParent === null) continue;
+                                // Son tur popup'ındaki "Play again" butonunu burada tıklama
+                                if (/play\s*again/i.test(_btn.textContent)) continue;
+                                _btn.click();
+                                eloStatus('▶ Continue tıklandı');
+                                clearInterval(_poll);
+                                return;
                             }
                         }, 500);
                     }
                 }
 
                 if (key === 'gameEnded' && value === true) {
-                    eloStatus(`🏆 Oyun bitti (${eloRound} tur)`);
+                    eloStatus(`🏆 Oyun bitti (${eloRound} tur) — Exit aranıyor…`);
                     eloRound      = 0;
                     eloGuessing   = false;
                     eloPendingLat = null;
                     eloPendingLon = null;
                     eloTimerReady = false;
+                    eloGameId++;  // devam eden sendEloGuess varsa iptal et
+
+                    // Önce Exit → ardından Play again otomasyonu
+                    // DOM watcher zaten tetiklemediyse buradan başlat
+                    if (eloEnabled && !eloNavigating) {
+                        eloNavigating = true;
+                        clickExitThenPlayAgain();
+                    }
                 }
             } catch (_) { /* decode hatası → sessizce geç */ }
         }
@@ -297,9 +465,25 @@
                     }
                 });
 
-                // Bağlantı kapanırsa referansı temizle
+                // Bağlantı kapanırsa state'i sıfırla
                 ws.addEventListener('close', function () {
-                    if (eloWs === ws) eloWs = null;
+                    if (eloWs !== ws) return;
+                    eloWs = null;
+                    if (!eloEnabled) return;
+                    // Devam eden sendEloGuess varsa iptal et
+                    eloGameId++;
+                    eloGuessing   = false;
+                    eloPendingLat = null;
+                    eloPendingLon = null;
+                    eloTimerReady = false;
+                    // Matchmaking sayfasına geçildi mi?
+                    if (location.pathname.includes('/multiplayer/duel')) {
+                        eloStatus('⏳ Rakip bekleniyor…');
+                        eloNavigating = false;
+                    } else if (!eloNavigating) {
+                        // Oyun içinde bağlantı koptu — DOM watcher popup'ı yakalayacak
+                        eloStatus('⚡ Bağlantı kesildi — ekran bekleniyor…');
+                    }
                 });
 
                 eloWs = ws;
