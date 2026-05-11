@@ -313,7 +313,9 @@
                 </div>
                 <div class="og-delay-row">
                     <label>🎯 Sapma (m)</label>
-                    <input class="og-delay-input" id="og-elo-radius" type="number" min="0" max="50000" step="100" value="1000" style="width:72px;">
+                    <input class="og-delay-input" id="og-elo-radius-min" type="number" min="0" max="50000" step="100" value="500">
+                    <span class="og-delay-sep">–</span>
+                    <input class="og-delay-input" id="og-elo-radius-max" type="number" min="0" max="50000" step="100" value="2000">
                 </div>
                 <div id="og-elo-status"></div>
                 <div style="font-size:10px;color:#788;line-height:1.5;">
@@ -349,7 +351,7 @@
 
         // ELO Farm toggle
         document.getElementById('og-elo-toggle').addEventListener('change', function () {
-            window.dispatchEvent(new CustomEvent('og-elofarm', { detail: { enabled: this.checked } }));
+            dispatchEloSettings(this.checked);
             chrome.storage.local.set({ ogEloEnabled: this.checked });
         });
 
@@ -357,7 +359,10 @@
         ['og-elo-think-min','og-elo-think-max'].forEach(id => {
             document.getElementById(id).addEventListener('change', saveEloThink);
         });
-        document.getElementById('og-elo-radius').addEventListener('change', saveEloRadius);
+        // ELO sapma aralığı inputları
+        ['og-elo-radius-min','og-elo-radius-max'].forEach(id => {
+            document.getElementById(id).addEventListener('change', saveEloRadius);
+        });
 
         // ELO Farm durum güncellemesi (map-main.js MAIN world'den gelir)
         window.addEventListener('og-elofarm-status', function (e) {
@@ -486,15 +491,38 @@
         if (!isFinite(tMin) || tMin < 0) tMin = 6.0;
         if (!isFinite(tMax) || tMax < 0) tMax = 10.0;
         if (tMax < tMin) tMax = tMin;
-        window.ogEloThink = { minMs: tMin * 1000, maxMs: tMax * 1000 };
         chrome.storage.local.set({ ogEloThink: { min: tMin, max: tMax } });
+        dispatchEloSettings();
     }
 
     function saveEloRadius() {
-        let r = parseFloat(document.getElementById('og-elo-radius').value);
-        if (!isFinite(r) || r < 0) r = 1000;
-        window.ogEloRadiusM = r;
-        chrome.storage.local.set({ ogEloRadius: r });
+        let rMin = parseFloat(document.getElementById('og-elo-radius-min').value);
+        let rMax = parseFloat(document.getElementById('og-elo-radius-max').value);
+        if (!isFinite(rMin) || rMin < 0) rMin = 500;
+        if (!isFinite(rMax) || rMax < 0) rMax = 2000;
+        if (rMax < rMin) rMax = rMin;
+        chrome.storage.local.set({ ogEloRadius: { min: rMin, max: rMax } });
+        dispatchEloSettings();
+    }
+
+    // Ayarları MAIN world'e CustomEvent ile ilet (window.* cross-world'de çalışmaz)
+    function dispatchEloSettings(enabled) {
+        const tMin = parseFloat(document.getElementById('og-elo-think-min').value) || 6.0;
+        const tMax = parseFloat(document.getElementById('og-elo-think-max').value) || 10.0;
+        const rMin = parseFloat(document.getElementById('og-elo-radius-min').value) || 500;
+        const rMax = parseFloat(document.getElementById('og-elo-radius-max').value) || 2000;
+        const detail = {
+            thinkMinMs: Math.max(0, tMin) * 1000,
+            thinkMaxMs: Math.max(0, tMax) * 1000,
+            radiusMinM: Math.max(0, rMin),
+            radiusMaxM: Math.max(0, rMax),
+        };
+        if (enabled !== undefined) {
+            detail.enabled = enabled;
+            window.dispatchEvent(new CustomEvent('og-elofarm', { detail }));
+        } else {
+            window.dispatchEvent(new CustomEvent('og-elofarm-settings', { detail }));
+        }
     }
 
     function loadFromStorage() {
@@ -514,13 +542,19 @@
                 if (typeof data.ogEloThink.min === 'number') document.getElementById('og-elo-think-min').value = data.ogEloThink.min;
                 if (typeof data.ogEloThink.max === 'number') document.getElementById('og-elo-think-max').value = data.ogEloThink.max;
             }
-            saveEloThink();
 
-            // ELO sapma yarıçapı (metre)
-            if (typeof data.ogEloRadius === 'number') {
-                document.getElementById('og-elo-radius').value = data.ogEloRadius;
+            // ELO sapma aralığı (metre)
+            if (data.ogEloRadius) {
+                // Yeni format: { min, max }
+                if (typeof data.ogEloRadius.min === 'number') document.getElementById('og-elo-radius-min').value = data.ogEloRadius.min;
+                if (typeof data.ogEloRadius.max === 'number') document.getElementById('og-elo-radius-max').value = data.ogEloRadius.max;
+                // Eski format: tek sayı ise her iki alana uygula
+            } else if (typeof data.ogEloRadius === 'number') {
+                document.getElementById('og-elo-radius-min').value = data.ogEloRadius;
+                document.getElementById('og-elo-radius-max').value = data.ogEloRadius;
             }
-            saveEloRadius();
+            // Kaydedilen ayarları MAIN world'e ilet (window.* cross-world'de çalışmaz)
+            dispatchEloSettings();
 
             // Mod — duello URL'sindeyse elo farm, değilse kaydedilen mod (elo kaydedilmişse sıfırla)
             const isDuelUrl = location.pathname.includes('/duel') || location.href.includes('/duel');
@@ -562,7 +596,7 @@
                 const t = document.getElementById('og-elo-toggle');
                 if (t && !t.checked) {
                     t.checked = true;
-                    window.dispatchEvent(new CustomEvent('og-elofarm', { detail: { enabled: true } }));
+                    dispatchEloSettings(true);
                 }
             }
         });

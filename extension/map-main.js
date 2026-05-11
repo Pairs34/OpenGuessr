@@ -142,17 +142,36 @@
         let eloNavigating = false;  // Exit→PlayAgain akışı sürüyor mu (çift tetiklenmeyi önler)
         let eloGameId     = 0;      // her yeni oyun/tur sıfırlanır; sendEloGuess stale kontrolü için
 
+        // Ayarlar (ui.js ISOLATED world'den CustomEvent ile gelir, window.* cross-world çalışmaz)
+        let eloSettings = {
+            thinkMinMs: 6000,
+            thinkMaxMs: 10000,
+            radiusMinM: 500,
+            radiusMaxM: 2000,
+        };
+
+        function applyEloSettings(detail) {
+            if (!detail) return;
+            if (typeof detail.thinkMinMs === 'number') eloSettings.thinkMinMs = detail.thinkMinMs;
+            if (typeof detail.thinkMaxMs === 'number') eloSettings.thinkMaxMs = detail.thinkMaxMs;
+            if (typeof detail.radiusMinM === 'number') eloSettings.radiusMinM = detail.radiusMinM;
+            if (typeof detail.radiusMaxM === 'number') eloSettings.radiusMaxM = detail.radiusMaxM;
+        }
+
         function eloStatus(text) {
             window.dispatchEvent(new CustomEvent('og-elofarm-status', { detail: { text } }));
         }
 
         // Görünür ve metni eşleşen butonu bul
+        // NOT: offsetParent=null, position:fixed element'lar için de null döner.
+        // getBoundingClientRect daha güvenilir — ekranda alan kaplıyorsa görünürdür.
         function findVisibleButton(textRegex, extraSelector) {
             const sel = extraSelector || 'button';
             const btns = document.querySelectorAll(sel);
             for (const b of btns) {
-                if (b.offsetParent === null) continue;          // gizli
                 if (b.disabled) continue;
+                const r = b.getBoundingClientRect();
+                if (r.width === 0 && r.height === 0) continue;  // gizli / display:none
                 const t = (b.textContent || '').trim();
                 if (textRegex.test(t)) return b;
             }
@@ -238,10 +257,10 @@
                 }
 
                 // ── Play again popup'ı ──────────────────────────────────────
-                // .popupHolder görünür VE içinde "Play again" butonu var
-                const popup = document.querySelector('.popupHolder');
-                if (popup && popup.offsetParent !== null && !eloNavigating) {
-                    const pa = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
+                // .popupHolder içindeki "Play again" butonunu doğrudan ara.
+                // offsetParent yerine getBoundingClientRect — fixed popup'lar için güvenli.
+                if (!eloNavigating) {
+                    const pa = findVisibleButton(/play\s*again/i, '.popupHolder button');
                     if (pa) {
                         eloNavigating = true;
                         pa.click();
@@ -273,6 +292,7 @@
 
         window.addEventListener('og-elofarm', function (e) {
             eloEnabled    = !!(e.detail && e.detail.enabled);
+            applyEloSettings(e.detail);
             eloGuessing   = false;
             eloPendingLat = null;
             eloPendingLon = null;
@@ -288,17 +308,19 @@
             }
         });
 
+        // ui.js'den sadece ayar güncellemesi (enabled değişmedi)
+        window.addEventListener('og-elofarm-settings', function (e) {
+            applyEloSettings(e.detail);
+        });
+
         async function sendEloGuess(wsSend, lat, lon) {
             if (eloGuessing) return;   // yarış koşulunu önle
             eloGuessing = true;        // delay öncesinde işaretle
             const _myGameId = ++eloGameId; // bu çağrıya ait snapshot — stale kontrolü için
             // İnsansı bekleme — UI'dan ayarlanabilir (varsayılan 6–10sn)
-            const _think = (window.ogEloThink && typeof window.ogEloThink.minMs === 'number')
-                ? window.ogEloThink
-                : { minMs: 6000, maxMs: 10000 };
-            const _min = Math.max(0, _think.minMs);
-            const _max = Math.max(_min, _think.maxMs);
-            const _thinkMs = _min + Math.random() * (_max - _min);
+            const _thinkMin = Math.max(0, eloSettings.thinkMinMs);
+            const _thinkMax = Math.max(_thinkMin, eloSettings.thinkMaxMs);
+            const _thinkMs  = _thinkMin + Math.random() * (_thinkMax - _thinkMin);
             // Geri sayım: her 250ms'de status güncelle
             const _deadline = Date.now() + _thinkMs;
             eloStatus(`🤔 Düşünüyor… ${(_thinkMs / 1000).toFixed(1)}s`);
@@ -318,10 +340,10 @@
             }
             eloRound++;
 
-            // Sapma yarıçapı — UI'dan ayarlanabilir (varsayılan 1000m, uniform daire dağılımı)
-            const _radiusM = (typeof window.ogEloRadiusM === 'number' && window.ogEloRadiusM >= 0)
-                ? window.ogEloRadiusM
-                : 1000;
+            // Sapma yarıçapı — UI'dan ayarlanabilir (min–max aralığından random, uniform daire dağılımı)
+            const _rMin    = Math.max(0, eloSettings.radiusMinM);
+            const _rMax    = Math.max(_rMin, eloSettings.radiusMaxM);
+            const _radiusM = _rMin + Math.random() * (_rMax - _rMin);
             const _angle = Math.random() * 2 * Math.PI;
             const _dist  = Math.sqrt(Math.random()) * _radiusM;
             const gLat = lat + (_dist * Math.cos(_angle)) / 111320;
