@@ -240,6 +240,91 @@
             font-family: 'Consolas', monospace;
             min-height: 14px;
         }
+        /* ── Maç geçmişi log ───────────────────────────────── */
+        #og-elo-log {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            border-top: 1px solid #1e2240;
+            padding-top: 6px;
+            max-height: 110px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #2e3460 transparent;
+        }
+        #og-elo-log:empty { display: none; }
+        .og-log-row {
+            font-size: 10px;
+            font-family: 'Consolas', monospace;
+            line-height: 1.45;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .og-log-row.win  { color: #56d364; }
+        .og-log-row.lose { color: #f66; }
+        .og-log-row.sacrifice { color: #f99; }
+        /* ── Dual-range slider (sapma) ─────────────────────── */
+        #og-radius-slider-wrap {
+            position: relative;
+            width: 100%;
+            height: 22px;
+        }
+        #og-radius-track-bg {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #2a2a45;
+            border-radius: 2px;
+            transform: translateY(-50%);
+        }
+        #og-radius-track-fill {
+            position: absolute;
+            top: 50%;
+            height: 4px;
+            background: #4285f4;
+            border-radius: 2px;
+            transform: translateY(-50%);
+        }
+        #og-radius-slider-wrap input[type="range"] {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            pointer-events: none;
+            margin: 0;
+            padding: 0;
+        }
+        #og-radius-slider-wrap input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4285f4;
+            cursor: pointer;
+            pointer-events: all;
+            border: 2px solid #0f0f1a;
+            box-shadow: 0 0 0 2px rgba(66,133,244,0.5);
+            transition: transform .1s, background .1s;
+        }
+        #og-radius-slider-wrap input[type="range"]::-webkit-slider-thumb:hover {
+            background: #5a97ff;
+            transform: scale(1.15);
+        }
+        #og-radius-slider-wrap input[type="range"]::-webkit-slider-thumb:active {
+            transform: scale(1.3);
+        }
+        #og-radius-display {
+            font-size: 10px;
+            color: #9ab4f0;
+            font-family: 'Consolas', monospace;
+        }
     `;
 
     /* ── DOM oluştur ───────────────────────────────────────── */
@@ -311,13 +396,24 @@
                     <span class="og-delay-sep">–</span>
                     <input class="og-delay-input" id="og-elo-think-max" type="number" min="0" max="120" step="0.5" value="10.0">
                 </div>
-                <div class="og-delay-row">
-                    <label>🎯 Sapma (m)</label>
-                    <input class="og-delay-input" id="og-elo-radius-min" type="number" min="0" max="50000" step="100" value="500">
-                    <span class="og-delay-sep">–</span>
-                    <input class="og-delay-input" id="og-elo-radius-max" type="number" min="0" max="50000" step="100" value="2000">
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-size:10px;color:#788;">🎯 Sapma (km)</span>
+                        <span id="og-radius-display" class="og-radius-display"></span>
+                    </div>
+                    <div id="og-radius-slider-wrap">
+                        <div id="og-radius-track-bg"></div>
+                        <div id="og-radius-track-fill"></div>
+                        <input type="range" id="og-elo-radius-min" min="0" max="1000" step="1" value="100">
+                        <input type="range" id="og-elo-radius-max" min="0" max="1000" step="1" value="500">
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;border-top:1px solid #1e2240;padding-top:8px;">
+                    <input type="checkbox" id="og-elo-sacrifice" style="accent-color:#f66;">
+                    <label for="og-elo-sacrifice" style="font-size:12px;color:#f99;font-weight:600;cursor:pointer;flex:1">Her 3. maçı kurban et 💀</label>
                 </div>
                 <div id="og-elo-status"></div>
+                <div id="og-elo-log"></div>
                 <div style="font-size:10px;color:#788;line-height:1.5;">
                     Duello odasına gir, her tur başında tam koordinatı WebSocket üzerinden otomatik gönderir. Rakibinin token'ına gerek yok.
                 </div>
@@ -359,9 +455,25 @@
         ['og-elo-think-min','og-elo-think-max'].forEach(id => {
             document.getElementById(id).addEventListener('change', saveEloThink);
         });
-        // ELO sapma aralığı inputları
+        // ELO kurban modu checkbox
+        document.getElementById('og-elo-sacrifice').addEventListener('change', function () {
+            chrome.storage.local.set({ ogEloSacrifice: this.checked });
+            dispatchEloSettings();
+        });
+
+        // ELO sapma slider'ları
         ['og-elo-radius-min','og-elo-radius-max'].forEach(id => {
-            document.getElementById(id).addEventListener('change', saveEloRadius);
+            document.getElementById(id).addEventListener('input', function () {
+                const minEl = document.getElementById('og-elo-radius-min');
+                const maxEl = document.getElementById('og-elo-radius-max');
+                // Min, max'ı geçemesin
+                if (parseInt(minEl.value) > parseInt(maxEl.value)) {
+                    if (id === 'og-elo-radius-min') minEl.value = maxEl.value;
+                    else maxEl.value = minEl.value;
+                }
+                updateRadiusSlider();
+                saveEloRadius();
+            });
         });
 
         // ELO Farm durum güncellemesi (map-main.js MAIN world'den gelir)
@@ -369,6 +481,45 @@
             const el = document.getElementById('og-elo-status');
             if (el) el.textContent = e.detail.text;
             window.setAutoStatus(e.detail.text);
+        });
+
+        // Maç sonucu (map-main.js MAIN world'den gelir)
+        window.addEventListener('og-elofarm-result', function (e) {
+            const d = e.detail;
+            // Satır formatı
+            const icon = d.isSacrifice ? '💀' : (d.won ? '✅' : '❌');
+            let line = `${icon} #${d.gameNum}`;
+            if (d.isSacrifice) {
+                line += ' KURBAN';
+            } else if (d.opponentName) {
+                line += ` vs ${d.opponentName}`;
+            }
+            if (d.eloChange) line += `  ${d.eloChange}`;
+            if (d.currentElo) line += ` (${d.currentElo})`;
+
+            const cls = d.isSacrifice ? 'sacrifice' : (d.won ? 'win' : 'lose');
+            const row = document.createElement('div');
+            row.className = `og-log-row ${cls}`;
+            row.textContent = line;
+            row.title = [
+                d.myPts  ? `Sen: ${d.myPts}` : '',
+                d.oppPts ? `Rakip: ${d.oppPts}` : '',
+            ].filter(Boolean).join(' | ');
+
+            const log = document.getElementById('og-elo-log');
+            if (log) {
+                log.insertBefore(row, log.firstChild);   // en yeni en üstte
+                // Max 15 satır
+                while (log.children.length > 15) log.removeChild(log.lastChild);
+            }
+
+            // Storage'a kaydet
+            chrome.storage.local.get('ogEloLog', function (data) {
+                const history = Array.isArray(data.ogEloLog) ? data.ogEloLog : [];
+                history.unshift({ line, cls, title: row.title });
+                if (history.length > 15) history.length = 15;
+                chrome.storage.local.set({ ogEloLog: history });
+            });
         });
 
         // Mod seçici
@@ -498,24 +649,44 @@
     function saveEloRadius() {
         let rMin = parseFloat(document.getElementById('og-elo-radius-min').value);
         let rMax = parseFloat(document.getElementById('og-elo-radius-max').value);
-        if (!isFinite(rMin) || rMin < 0) rMin = 500;
-        if (!isFinite(rMax) || rMax < 0) rMax = 2000;
+        if (!isFinite(rMin) || rMin < 0) rMin = 100;
+        if (!isFinite(rMax) || rMax < 0) rMax = 500;
         if (rMax < rMin) rMax = rMin;
         chrome.storage.local.set({ ogEloRadius: { min: rMin, max: rMax } });
         dispatchEloSettings();
+    }
+
+    function updateRadiusSlider() {
+        const minEl  = document.getElementById('og-elo-radius-min');
+        const maxEl  = document.getElementById('og-elo-radius-max');
+        const fill   = document.getElementById('og-radius-track-fill');
+        const disp   = document.getElementById('og-radius-display');
+        if (!minEl || !maxEl || !fill || !disp) return;
+        const sliderMax = parseInt(minEl.max);
+        const minVal    = parseInt(minEl.value);
+        const maxVal    = parseInt(maxEl.value);
+        const pctLeft   = (minVal / sliderMax) * 100;
+        const pctRight  = 100 - (maxVal / sliderMax) * 100;
+        fill.style.left  = pctLeft  + '%';
+        fill.style.right = pctRight + '%';
+        disp.textContent = minVal.toLocaleString('tr-TR') + ' – ' + maxVal.toLocaleString('tr-TR') + ' km';
+        // Min baş tıklanabilir kalsın: min değer max'a yakınsaırsa min'i üste al
+        minEl.style.zIndex = (minVal >= maxVal - parseInt(minEl.step)) ? '2' : '1';
+        maxEl.style.zIndex = (minVal >= maxVal - parseInt(minEl.step)) ? '1' : '2';
     }
 
     // Ayarları MAIN world'e CustomEvent ile ilet (window.* cross-world'de çalışmaz)
     function dispatchEloSettings(enabled) {
         const tMin = parseFloat(document.getElementById('og-elo-think-min').value) || 6.0;
         const tMax = parseFloat(document.getElementById('og-elo-think-max').value) || 10.0;
-        const rMin = parseFloat(document.getElementById('og-elo-radius-min').value) || 500;
-        const rMax = parseFloat(document.getElementById('og-elo-radius-max').value) || 2000;
+        const rMin = parseFloat(document.getElementById('og-elo-radius-min').value) || 100;
+        const rMax = parseFloat(document.getElementById('og-elo-radius-max').value) || 500;
         const detail = {
-            thinkMinMs: Math.max(0, tMin) * 1000,
-            thinkMaxMs: Math.max(0, tMax) * 1000,
-            radiusMinM: Math.max(0, rMin),
-            radiusMaxM: Math.max(0, rMax),
+            thinkMinMs:      Math.max(0, tMin) * 1000,
+            thinkMaxMs:      Math.max(0, tMax) * 1000,
+            radiusMinM:      Math.max(0, rMin) * 1000,
+            radiusMaxM:      Math.max(0, rMax) * 1000,
+            sacrificeEvery3: !!(document.getElementById('og-elo-sacrifice') || {}).checked,
         };
         if (enabled !== undefined) {
             detail.enabled = enabled;
@@ -526,7 +697,7 @@
     }
 
     function loadFromStorage() {
-        chrome.storage.local.get(['ogDelays', 'ogAutoEnabled', 'ogMode', 'ogXP', 'ogEloThink', 'ogEloRadius'], function (data) {
+        chrome.storage.local.get(['ogDelays', 'ogAutoEnabled', 'ogMode', 'ogXP', 'ogEloThink', 'ogEloRadius', 'ogEloSacrifice', 'ogEloLog'], function (data) {
             // Gecikmeleri yükle
             if (data.ogDelays) {
                 const d = data.ogDelays;
@@ -546,12 +717,40 @@
             // ELO sapma aralığı (metre)
             if (data.ogEloRadius) {
                 // Yeni format: { min, max }
-                if (typeof data.ogEloRadius.min === 'number') document.getElementById('og-elo-radius-min').value = data.ogEloRadius.min;
-                if (typeof data.ogEloRadius.max === 'number') document.getElementById('og-elo-radius-max').value = data.ogEloRadius.max;
+                // Eski metre değeriyse (>1000) km'ye çevir, yeni km değeriyse direkt yükle
+                if (typeof data.ogEloRadius.min === 'number') {
+                    const v = data.ogEloRadius.min;
+                    document.getElementById('og-elo-radius-min').value = Math.min(v > 1000 ? Math.round(v / 1000) : v, 1000);
+                }
+                if (typeof data.ogEloRadius.max === 'number') {
+                    const v = data.ogEloRadius.max;
+                    document.getElementById('og-elo-radius-max').value = Math.min(v > 1000 ? Math.round(v / 1000) : v, 1000);
+                }
                 // Eski format: tek sayı ise her iki alana uygula
             } else if (typeof data.ogEloRadius === 'number') {
-                document.getElementById('og-elo-radius-min').value = data.ogEloRadius;
-                document.getElementById('og-elo-radius-max').value = data.ogEloRadius;
+                const v = data.ogEloRadius;
+                const km = Math.min(v > 1000 ? Math.round(v / 1000) : v, 1000);
+                document.getElementById('og-elo-radius-min').value = km;
+                document.getElementById('og-elo-radius-max').value = km;
+            }
+            updateRadiusSlider();
+            // ELO kurban modu
+            if (data.ogEloSacrifice !== undefined) {
+                const el = document.getElementById('og-elo-sacrifice');
+                if (el) el.checked = !!data.ogEloSacrifice;
+            }
+            // Maç geçmişi log'unu yükle
+            if (Array.isArray(data.ogEloLog) && data.ogEloLog.length) {
+                const log = document.getElementById('og-elo-log');
+                if (log) {
+                    data.ogEloLog.forEach(function (entry) {
+                        const row = document.createElement('div');
+                        row.className = `og-log-row ${entry.cls || ''}`;
+                        row.textContent = entry.line || '';
+                        row.title = entry.title || '';
+                        log.appendChild(row);
+                    });
+                }
             }
             // Kaydedilen ayarları MAIN world'e ilet (window.* cross-world'de çalışmaz)
             dispatchEloSettings();

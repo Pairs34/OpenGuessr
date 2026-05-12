@@ -141,39 +141,92 @@
         let eloTimerReady = false;  // countdownActive:false geldi mi
         let eloNavigating = false;  // Exit→PlayAgain akışı sürüyor mu (çift tetiklenmeyi önler)
         let eloGameId     = 0;      // her yeni oyun/tur sıfırlanır; sendEloGuess stale kontrolü için
+        let eloGameCount            = 0;      // tamamlanan oyun sayısı; her 3. oyunu kurban için
+        let eloLastGameWasSacrifice = false;  // son oyun kurban mıydı? (scrapeGameResult için)
 
         // Ayarlar (ui.js ISOLATED world'den CustomEvent ile gelir, window.* cross-world çalışmaz)
         let eloSettings = {
-            thinkMinMs: 6000,
-            thinkMaxMs: 10000,
-            radiusMinM: 500,
-            radiusMaxM: 2000,
+            thinkMinMs:      6000,
+            thinkMaxMs:      10000,
+            radiusMinM:      500,
+            radiusMaxM:      2000,
+            sacrificeEvery3: false,
         };
 
         function applyEloSettings(detail) {
             if (!detail) return;
-            if (typeof detail.thinkMinMs === 'number') eloSettings.thinkMinMs = detail.thinkMinMs;
-            if (typeof detail.thinkMaxMs === 'number') eloSettings.thinkMaxMs = detail.thinkMaxMs;
-            if (typeof detail.radiusMinM === 'number') eloSettings.radiusMinM = detail.radiusMinM;
-            if (typeof detail.radiusMaxM === 'number') eloSettings.radiusMaxM = detail.radiusMaxM;
+            if (typeof detail.thinkMinMs      === 'number')  eloSettings.thinkMinMs      = detail.thinkMinMs;
+            if (typeof detail.thinkMaxMs      === 'number')  eloSettings.thinkMaxMs      = detail.thinkMaxMs;
+            if (typeof detail.radiusMinM      === 'number')  eloSettings.radiusMinM      = detail.radiusMinM;
+            if (typeof detail.radiusMaxM      === 'number')  eloSettings.radiusMaxM      = detail.radiusMaxM;
+            if (typeof detail.sacrificeEvery3 === 'boolean') eloSettings.sacrificeEvery3 = detail.sacrificeEvery3;
         }
 
         function eloStatus(text) {
             window.dispatchEvent(new CustomEvent('og-elofarm-status', { detail: { text } }));
         }
 
-        // Görünür ve metni eşleşen butonu bul
-        // NOT: offsetParent=null, position:fixed element'lar için de null döner.
-        // getBoundingClientRect daha güvenilir — ekranda alan kaplıyorsa görünürdür.
+        // Kazanma ekranı + Play again popup'ından maç sonucunu DOM'dan okur ve ui.js'e iletir.
+        function scrapeGameResult() {
+            const result = {
+                gameNum:      eloGameCount,          // gameEnded'da zaten artırıldı
+                isSacrifice:  eloLastGameWasSacrifice,
+                won:          null,
+                opponentName: null,
+                myPts:        null,
+                oppPts:       null,
+                eloChange:    null,
+                currentElo:   null,
+            };
+
+            // ── Kazanma/kaybetme overlay (multiplayerOverlay) ──────────────
+            const titleEl = document.querySelector('.multiplayerTitle');
+            if (titleEl) result.won = /won/i.test(titleEl.textContent);
+
+            const allEntries = document.querySelectorAll('.multiplayerOverlayEntry');
+            allEntries.forEach(function (entry) {
+                const nameEl  = entry.querySelector('.usernameSpan');
+                const scoreEl = entry.querySelector('.multiplayerEntryPlayerScore');
+                if (entry.classList.contains('yourMultiplayerOverlay')) {
+                    if (scoreEl) result.myPts = scoreEl.textContent.trim();
+                } else {
+                    if (nameEl)  result.opponentName = nameEl.textContent.trim();
+                    if (scoreEl) result.oppPts = scoreEl.textContent.trim();
+                }
+            });
+
+            // ── Play again popup (duelResultFlex) ──────────────────────────
+            const socialHeader = document.querySelector('#socialHeader');
+            if (socialHeader && result.won === null)
+                result.won = /victory/i.test(socialHeader.textContent);
+
+            const resultBoxes = document.querySelectorAll('.duelResultFlex .resultBox h2.resultText');
+            resultBoxes.forEach(function (b) {
+                if (/elo/i.test(b.textContent) && result.eloChange === null)
+                    result.eloChange = b.textContent.trim();
+            });
+
+            const eloValEl = document.querySelector('.eloValue');
+            if (eloValEl) result.currentElo = eloValEl.textContent.trim();
+
+            window.dispatchEvent(new CustomEvent('og-elofarm-result', { detail: result }));
+        }
+
+        // Görünür ve metni eşleşen butonu bul.
+        // Önce ucuz offsetParent kontrolü yapar; null gelirse (fixed/sticky için)
+        // ancak o zaman getBoundingClientRect'e başvurur — layout reflow minimize.
         function findVisibleButton(textRegex, extraSelector) {
             const sel = extraSelector || 'button';
             const btns = document.querySelectorAll(sel);
             for (const b of btns) {
                 if (b.disabled) continue;
-                const r = b.getBoundingClientRect();
-                if (r.width === 0 && r.height === 0) continue;  // gizli / display:none
                 const t = (b.textContent || '').trim();
-                if (textRegex.test(t)) return b;
+                if (!textRegex.test(t)) continue;
+                // offsetParent: null → ya display:none ya da fixed/sticky
+                if (b.offsetParent !== null) return b;
+                // fixed/sticky pozisyonlu elemanlar için fallback
+                const r = b.getBoundingClientRect();
+                if (r.width > 0 || r.height > 0) return b;
             }
             return null;
         }
@@ -184,6 +237,7 @@
             // 0) Play again zaten görünüyor mu? (gameEnded öncesinde popup açılmış olabilir)
             const earlyPlayAgain = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
             if (earlyPlayAgain) {
+                scrapeGameResult();
                 earlyPlayAgain.click();
                 eloStatus('🔁 Play again tıklandı (direkt)');
                 eloNavigating = false;
@@ -204,6 +258,7 @@
                 // Beklerken Play again çıktı mı? (race condition fallback)
                 const racePA = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
                 if (racePA) {
+                    scrapeGameResult();
                     racePA.click();
                     eloStatus('🔁 Play again tıklandı (race fallback)');
                     eloNavigating = false;
@@ -221,6 +276,7 @@
             for (let i = 0; i < 120 && eloEnabled; i++) {
                 const again = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
                 if (again) {
+                    scrapeGameResult();
                     again.click();
                     eloStatus('🔁 Play again tıklandı');
                     eloNavigating = false;
@@ -263,6 +319,7 @@
                     const pa = findVisibleButton(/play\s*again/i, '.popupHolder button');
                     if (pa) {
                         eloNavigating = true;
+                        scrapeGameResult();
                         pa.click();
                         eloStatus('🔁 Play again tıklandı (DOM watcher)');
                         return;
@@ -300,6 +357,7 @@
             eloNavigating = false;
             eloGameId++;  // tüm bekleyen async işlemleri iptal et
             eloRound      = 0;
+            eloGameCount  = 0;  // toggle açıldığında sayacı sıfırla
             if (eloEnabled) {
                 const isMatchmaking = location.pathname.includes('/multiplayer/duel');
                 eloStatus(isMatchmaking ? '⏳ Rakip bekleniyor…' : '⚔️ WS dinleniyor…');
@@ -340,16 +398,23 @@
             }
             eloRound++;
 
-            // Sapma yarıçapı — UI'dan ayarlanabilir (min–max aralığından random, uniform daire dağılımı)
-            const _rMin    = Math.max(0, eloSettings.radiusMinM);
-            const _rMax    = Math.max(_rMin, eloSettings.radiusMaxM);
-            const _radiusM = _rMin + Math.random() * (_rMax - _rMin);
-            const _angle = Math.random() * 2 * Math.PI;
-            const _dist  = Math.sqrt(Math.random()) * _radiusM;
-            const gLat = lat + (_dist * Math.cos(_angle)) / 111320;
-            const gLon = lon + (_dist * Math.sin(_angle)) / (111320 * Math.cos(lat * Math.PI / 180));
-
-            eloStatus(`⏳ Tur ${eloRound}: ${gLat.toFixed(4)},${gLon.toFixed(4)} (~${Math.round(_dist)}m)`);
+            // Her 3. oyunu kurban et: tamamen rastgele uzak koordinat gönder
+            let gLat, gLon;
+            if (eloSettings.sacrificeEvery3 && (eloGameCount % 3 === 2)) {
+                gLat = (Math.random() * 140) - 70;
+                gLon = (Math.random() * 360) - 180;
+                eloStatus(`💀 Tur ${eloRound}: Kurban modu — Oyun #${eloGameCount + 1}`);
+            } else {
+                // Sapma yarıçapı — UI'dan ayarlanabilir (min–max aralığından random, uniform daire dağılımı)
+                const _rMin    = Math.max(0, eloSettings.radiusMinM);
+                const _rMax    = Math.max(_rMin, eloSettings.radiusMaxM);
+                const _radiusM = _rMin + Math.random() * (_rMax - _rMin);
+                const _angle = Math.random() * 2 * Math.PI;
+                const _dist  = Math.sqrt(Math.random()) * _radiusM;
+                gLat = lat + (_dist * Math.cos(_angle)) / 111320;
+                gLon = lon + (_dist * Math.sin(_angle)) / (111320 * Math.cos(lat * Math.PI / 180));
+                eloStatus(`⏳ Tur ${eloRound}: ${gLat.toFixed(4)},${gLon.toFixed(4)} (~${Math.round(_dist)}m)`);
+            }
 
             // Görsel pini offset konumuna taşı (Leaflet click → Svelte app günceller)
             window.dispatchEvent(new CustomEvent('og-pin', { detail: { lat: gLat, lng: gLon } }));
@@ -434,7 +499,9 @@
                 }
 
                 if (key === 'gameEnded' && value === true) {
-                    eloStatus(`🏆 Oyun bitti (${eloRound} tur) — Exit aranıyor…`);
+                    eloLastGameWasSacrifice = eloSettings.sacrificeEvery3 && (eloGameCount % 3 === 2);
+                    eloGameCount++;  // oyun tamamlandı — sayacı artır
+                    eloStatus(`🏆 Oyun bitti (${eloRound} tur, toplam: ${eloGameCount}) — Exit aranıyor…`);
                     eloRound      = 0;
                     eloGuessing   = false;
                     eloPendingLat = null;
@@ -452,15 +519,16 @@
             } catch (_) { /* decode hatası → sessizce geç */ }
         }
 
+        // WS frame'ini base64'e çevirir — yalnızca manuel debug için kullanılır.
+        // Her mesajda çağrılmaz; büyük buffer'larda stack overflow'u önlemek için chunk'lı.
         function toB64(data) {
             try {
-                if (typeof data === 'string')      return btoa(unescape(encodeURIComponent(data)));
-                if (data instanceof ArrayBuffer)   return btoa(String.fromCharCode(...new Uint8Array(data)));
-                if (data instanceof Blob) {
-                    const reader = new FileReader();
-                    reader.onload = () => console.log('[OG-WS ←]', btoa(String.fromCharCode(...new Uint8Array(reader.result))));
-                    reader.readAsArrayBuffer(data);
-                    return null;
+                if (typeof data === 'string')    return btoa(unescape(encodeURIComponent(data)));
+                if (data instanceof ArrayBuffer) {
+                    const bytes = new Uint8Array(data);
+                    let bin = '';
+                    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+                    return btoa(bin);
                 }
             } catch (_) {}
             return null;
@@ -471,16 +539,12 @@
 
             if (typeof url === 'string' && url.includes('accounts.openguessr.com')) {
                 const origSend = ws.send.bind(ws);
+                // send hook — sadece yönlendirme, loglama yok (main thread'i bloke etmesin)
                 ws.send = function (data) {
-                    const b64 = toB64(data);
-                    if (b64) console.log('[OG-WS →]', b64);
                     return origSend(data);
                 };
 
                 ws.addEventListener('message', function (e) {
-                    const b64 = toB64(e.data);
-                    if (b64) console.log('[OG-WS ←]', b64);
-
                     if (eloEnabled) {
                         eloWs = ws;
                         handleEloMsg(e.data, origSend);
