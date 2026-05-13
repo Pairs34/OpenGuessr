@@ -19,13 +19,13 @@
             z-index: 2147483647;
             display: none;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             background: #0f0f1a;
             border: 1px solid #4285f4;
-            border-radius: 14px;
-            padding: 14px 16px;
-            min-width: 220px;
-            box-shadow: 0 6px 28px rgba(66,133,244,0.35);
+            border-radius: 16px;
+            padding: 16px 18px;
+            min-width: 260px;
+            box-shadow: 0 8px 32px rgba(66,133,244,0.38);
             font-family: 'Segoe UI', Arial, sans-serif;
             color: #fff;
             animation: og-in 0.3s cubic-bezier(.2,.8,.4,1) both;
@@ -48,7 +48,7 @@
             cursor: grabbing;
         }
         #og-title {
-            font-size: 12px;
+            font-size: 13px;
             color: #9ab4f0;
             font-weight: 600;
             letter-spacing: .4px;
@@ -59,14 +59,14 @@
             border: none;
             color: #666;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 20px;
             line-height: 1;
             padding: 0 2px;
             transition: color .15s;
         }
         #og-close:hover { color: #f44; }
         #og-coords {
-            font-size: 11px;
+            font-size: 12px;
             color: #788;
             font-family: 'Consolas', monospace;
         }
@@ -74,14 +74,14 @@
             background: #4285f4;
             color: #fff;
             border: none;
-            border-radius: 9px;
-            padding: 9px 14px;
+            border-radius: 10px;
+            padding: 10px 16px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 7px;
+            gap: 8px;
             transition: background .15s, transform .1s;
         }
         #og-open:hover  { background: #3367d6; transform: scale(1.02); }
@@ -122,17 +122,17 @@
             left: 18px;
         }
         #og-auto-label {
-            font-size: 12px;
+            font-size: 13px;
             color: #9ab4f0;
             font-weight: 600;
             cursor: pointer;
             flex: 1;
         }
         #og-auto-status {
-            font-size: 10px;
+            font-size: 11px;
             color: #56d364;
             font-family: 'Consolas', monospace;
-            min-height: 14px;
+            min-height: 15px;
         }
         #og-delays {
             display: flex;
@@ -147,19 +147,19 @@
             gap: 6px;
         }
         .og-delay-row label {
-            font-size: 10px;
+            font-size: 11px;
             color: #788;
-            width: 82px;
+            width: 90px;
             flex-shrink: 0;
         }
         .og-delay-input {
-            width: 48px;
+            width: 52px;
             background: #1a1a2e;
             border: 1px solid #2e3460;
-            border-radius: 5px;
+            border-radius: 6px;
             color: #9ab4f0;
-            font-size: 11px;
-            padding: 3px 5px;
+            font-size: 12px;
+            padding: 4px 6px;
             text-align: center;
             user-select: text;
         }
@@ -168,7 +168,7 @@
             border-color: #4285f4;
         }
         .og-delay-sep {
-            font-size: 10px;
+            font-size: 12px;
             color: #555;
         }
         #og-mode-row {
@@ -181,11 +181,11 @@
             flex: 1;
             background: #1a1a2e;
             border: 1px solid #2e3460;
-            border-radius: 7px;
+            border-radius: 8px;
             color: #788;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
-            padding: 5px 4px;
+            padding: 6px 5px;
             cursor: pointer;
             transition: all .15s;
         }
@@ -204,12 +204,12 @@
             width: 100%;
             background: #1a1a2e;
             border: 1px solid #2e3460;
-            border-radius: 5px;
+            border-radius: 6px;
             color: #9ab4f0;
-            font-size: 10px;
-            padding: 4px 6px;
+            font-size: 11px;
+            padding: 5px 7px;
             resize: vertical;
-            min-height: 44px;
+            min-height: 48px;
             font-family: 'Consolas', monospace;
             box-sizing: border-box;
             user-select: text;
@@ -219,10 +219,10 @@
             background: #56d364;
             color: #0f0f1a;
             border: none;
-            border-radius: 7px;
-            padding: 7px;
+            border-radius: 8px;
+            padding: 9px;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 13px;
             cursor: pointer;
             transition: filter .15s;
         }
@@ -235,35 +235,60 @@
             padding-top: 8px;
         }
         #og-elo-status {
-            font-size: 10px;
+            font-size: 11px;
             color: #56d364;
             font-family: 'Consolas', monospace;
-            min-height: 14px;
+            min-height: 15px;
         }
         /* ── Maç geçmişi log ───────────────────────────────── */
         #og-elo-log {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 4px;
             border-top: 1px solid #1e2240;
-            padding-top: 6px;
-            max-height: 110px;
+            padding-top: 8px;
+            max-height: 200px;
             overflow-y: auto;
             scrollbar-width: thin;
             scrollbar-color: #2e3460 transparent;
         }
         #og-elo-log:empty { display: none; }
-        .og-log-row {
-            font-size: 10px;
-            font-family: 'Consolas', monospace;
-            line-height: 1.45;
+        .og-log-card {
+            border-left: 3px solid #444;
+            border-radius: 6px;
+            background: #13132a;
+            padding: 5px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .og-log-card.win       { border-left-color: #56d364; }
+        .og-log-card.lose      { border-left-color: #f66; }
+        .og-log-card.sacrifice { border-left-color: #f99; }
+        .og-log-top {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 700;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
         }
-        .og-log-row.win  { color: #56d364; }
-        .og-log-row.lose { color: #f66; }
-        .og-log-row.sacrifice { color: #f99; }
+        .og-log-top .og-log-num  { color: #788; min-width: 24px; }
+        .og-log-top .og-log-icon { font-size: 12px; }
+        .og-log-top .og-log-vs   { color: #ccd; flex: 1; overflow: hidden; text-overflow: ellipsis; }
+        .og-log-top .og-log-elo  { color: #56d364; margin-left: auto; white-space: nowrap; }
+        .og-log-top .og-log-elo.neg { color: #f66; }
+        .og-log-top .og-log-elo.sac { color: #f99; }
+        .og-log-bottom {
+            display: flex;
+            gap: 6px;
+            font-size: 10px;
+            color: #788;
+            font-family: 'Consolas', monospace;
+        }
+        .og-log-bottom .og-log-score { flex: 1; }
+        .og-log-bottom .og-log-cur   { color: #9ab4f0; }
         /* ── Dual-range slider (sapma) ─────────────────────── */
         #og-radius-slider-wrap {
             position: relative;
@@ -321,7 +346,7 @@
             transform: scale(1.3);
         }
         #og-radius-display {
-            font-size: 10px;
+            font-size: 11px;
             color: #9ab4f0;
             font-family: 'Consolas', monospace;
         }
@@ -372,7 +397,7 @@
             </div>
             <div id="og-panel-xp">
                 <div class="og-delay-row" style="flex-direction:column;align-items:flex-start;gap:3px;">
-                    <label style="width:auto;color:#9ab4f0;font-size:11px;">Bearer Token</label>
+                    <label style="width:auto;color:#9ab4f0;font-size:12px;">Bearer Token</label>
                     <textarea id="og-xp-token" rows="2" placeholder="eyJhbGci…"></textarea>
                 </div>
                 <div class="og-delay-row">
@@ -388,7 +413,7 @@
             <div id="og-panel-elo" style="display:none">
                 <div style="display:flex;align-items:center;gap:8px;">
                     <input type="checkbox" id="og-elo-toggle">
-                    <label for="og-elo-toggle" style="font-size:12px;color:#9ab4f0;font-weight:600;cursor:pointer;flex:1">WS ile Otomatik Kazan</label>
+                    <label for="og-elo-toggle" style="font-size:13px;color:#9ab4f0;font-weight:600;cursor:pointer;flex:1">WS ile Otomatik Kazan</label>
                 </div>
                 <div class="og-delay-row">
                     <label>🤔 Düşünme (sn)</label>
@@ -398,7 +423,7 @@
                 </div>
                 <div style="display:flex;flex-direction:column;gap:6px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span style="font-size:10px;color:#788;">🎯 Sapma (km)</span>
+                        <span style="font-size:11px;color:#788;">🎯 Sapma (km)</span>
                         <span id="og-radius-display" class="og-radius-display"></span>
                     </div>
                     <div id="og-radius-slider-wrap">
@@ -410,11 +435,16 @@
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;border-top:1px solid #1e2240;padding-top:8px;">
                     <input type="checkbox" id="og-elo-sacrifice" style="accent-color:#f66;">
-                    <label for="og-elo-sacrifice" style="font-size:12px;color:#f99;font-weight:600;cursor:pointer;flex:1">Her 3. maçı kurban et 💀</label>
+                    <label for="og-elo-sacrifice" style="font-size:13px;color:#f99;font-weight:600;cursor:pointer;flex:1">Her 3. maçı kurban et 💀</label>
+                </div>
+                <div class="og-delay-row" style="border-top:1px solid #1e2240;padding-top:8px;">
+                    <label style="color:#f99;">💀 Tur kurban (0–4)</label>
+                    <input class="og-delay-input" id="og-elo-sacrifice-round" type="number" min="0" max="4" step="1" value="1" style="width:40px;">
+                    <span style="font-size:11px;color:#788;">/ 5 tur kaybeder</span>
                 </div>
                 <div id="og-elo-status"></div>
                 <div id="og-elo-log"></div>
-                <div style="font-size:10px;color:#788;line-height:1.5;">
+                <div style="font-size:11px;color:#788;line-height:1.6;">
                     Duello odasına gir, her tur başında tam koordinatı WebSocket üzerinden otomatik gönderir. Rakibinin token'ına gerek yok.
                 </div>
             </div>
@@ -461,6 +491,16 @@
             dispatchEloSettings();
         });
 
+        // Tur kurban sayısı
+        document.getElementById('og-elo-sacrifice-round').addEventListener('change', function () {
+            let v = parseInt(this.value);
+            if (!isFinite(v) || v < 0) v = 0;
+            if (v > 4) v = 4;
+            this.value = v;
+            chrome.storage.local.set({ ogEloSacrificeRound: v });
+            dispatchEloSettings();
+        });
+
         // ELO sapma slider'ları
         ['og-elo-radius-min','og-elo-radius-max'].forEach(id => {
             document.getElementById(id).addEventListener('input', function () {
@@ -480,47 +520,65 @@
         window.addEventListener('og-elofarm-status', function (e) {
             const el = document.getElementById('og-elo-status');
             if (el) el.textContent = e.detail.text;
-            window.setAutoStatus(e.detail.text);
         });
 
         // Maç sonucu (map-main.js MAIN world'den gelir)
         window.addEventListener('og-elofarm-result', function (e) {
             const d = e.detail;
-            // Satır formatı
-            const icon = d.isSacrifice ? '💀' : (d.won ? '✅' : '❌');
-            let line = `${icon} #${d.gameNum}`;
-            if (d.isSacrifice) {
-                line += ' KURBAN';
-            } else if (d.opponentName) {
-                line += ` vs ${d.opponentName}`;
-            }
-            if (d.eloChange) line += `  ${d.eloChange}`;
-            if (d.currentElo) line += ` (${d.currentElo})`;
-
-            const cls = d.isSacrifice ? 'sacrifice' : (d.won ? 'win' : 'lose');
-            const row = document.createElement('div');
-            row.className = `og-log-row ${cls}`;
-            row.textContent = line;
-            row.title = [
-                d.myPts  ? `Sen: ${d.myPts}` : '',
-                d.oppPts ? `Rakip: ${d.oppPts}` : '',
-            ].filter(Boolean).join(' | ');
-
             const log = document.getElementById('og-elo-log');
             if (log) {
-                log.insertBefore(row, log.firstChild);   // en yeni en üstte
-                // Max 15 satır
+                log.insertBefore(buildLogCard(d), log.firstChild);
                 while (log.children.length > 15) log.removeChild(log.lastChild);
             }
-
-            // Storage'a kaydet
+            // Storage'a kaydet — tüm detail nesnesini sakla
             chrome.storage.local.get('ogEloLog', function (data) {
                 const history = Array.isArray(data.ogEloLog) ? data.ogEloLog : [];
-                history.unshift({ line, cls, title: row.title });
+                history.unshift(d);
                 if (history.length > 15) history.length = 15;
                 chrome.storage.local.set({ ogEloLog: history });
             });
         });
+
+        function buildLogCard(d) {
+            const isSac = !!d.isSacrifice;
+            const won   = !!d.won;
+            const cls   = isSac ? 'sacrifice' : (won ? 'win' : 'lose');
+
+            // Üst satır: #N • ikon • vs isim • elo değişim
+            const icon = isSac ? '💀' : (won ? '✅' : '❌');
+            const vsText = isSac
+                ? 'KURBAN MAÇI'
+                : (d.opponentName ? `vs ${d.opponentName}` : 'vs ???');
+            const eloRaw  = (d.eloChange  || '').replace(/[^\d+\-]/g, '').trim();
+            const eloText = d.eloChange
+                ? d.eloChange.replace(/elo/i, '').trim()
+                : '';
+            const eloNeg  = eloRaw.startsWith('-');
+
+            // Alt satır: puan bilgisi + toplam elo
+            const scoreParts = [];
+            if (d.myPts)   scoreParts.push(`Sen: ${d.myPts}`);
+            if (d.oppPts)  scoreParts.push(`Rakip: ${d.oppPts}`);
+            const scoreText = scoreParts.join('  |  ');
+            const curText   = d.currentElo ? `ELO: ${d.currentElo}` : '';
+
+            const card = document.createElement('div');
+            card.className = `og-log-card ${cls}`;
+            card.innerHTML = `
+                <div class="og-log-top">
+                    <span class="og-log-num">#${d.gameNum != null ? d.gameNum : '?'}</span>
+                    <span class="og-log-icon">${icon}</span>
+                    <span class="og-log-vs">${vsText}</span>
+                    ${eloText ? `<span class="og-log-elo${isSac ? ' sac' : eloNeg ? ' neg' : ''}">${eloText}</span>` : ''}
+                </div>
+                ${(scoreText || curText) ? `
+                <div class="og-log-bottom">
+                    ${scoreText ? `<span class="og-log-score">${scoreText}</span>` : ''}
+                    ${curText   ? `<span class="og-log-cur">${curText}</span>` : ''}
+                </div>` : ''}
+            `;
+            return card;
+        }
 
         // Mod seçici
         function switchMode(mode) {
@@ -681,12 +739,14 @@
         const tMax = parseFloat(document.getElementById('og-elo-think-max').value) || 10.0;
         const rMin = parseFloat(document.getElementById('og-elo-radius-min').value) || 100;
         const rMax = parseFloat(document.getElementById('og-elo-radius-max').value) || 500;
+        const srEl = document.getElementById('og-elo-sacrifice-round');
         const detail = {
             thinkMinMs:      Math.max(0, tMin) * 1000,
             thinkMaxMs:      Math.max(0, tMax) * 1000,
             radiusMinM:      Math.max(0, rMin) * 1000,
             radiusMaxM:      Math.max(0, rMax) * 1000,
             sacrificeEvery3: !!(document.getElementById('og-elo-sacrifice') || {}).checked,
+            sacrificeRound:  srEl ? Math.min(4, Math.max(0, parseInt(srEl.value) || 0)) : 0,
         };
         if (enabled !== undefined) {
             detail.enabled = enabled;
@@ -697,7 +757,7 @@
     }
 
     function loadFromStorage() {
-        chrome.storage.local.get(['ogDelays', 'ogAutoEnabled', 'ogMode', 'ogXP', 'ogEloThink', 'ogEloRadius', 'ogEloSacrifice', 'ogEloLog'], function (data) {
+        chrome.storage.local.get(['ogDelays', 'ogAutoEnabled', 'ogMode', 'ogXP', 'ogEloThink', 'ogEloRadius', 'ogEloSacrifice', 'ogEloSacrificeRound', 'ogEloLog'], function (data) {
             // Gecikmeleri yükle
             if (data.ogDelays) {
                 const d = data.ogDelays;
@@ -739,16 +799,26 @@
                 const el = document.getElementById('og-elo-sacrifice');
                 if (el) el.checked = !!data.ogEloSacrifice;
             }
+            // Tur kurban sayısı
+            if (data.ogEloSacrificeRound !== undefined) {
+                const el = document.getElementById('og-elo-sacrifice-round');
+                if (el) el.value = Math.min(4, Math.max(0, parseInt(data.ogEloSacrificeRound) || 0));
+            }
             // Maç geçmişi log'unu yükle
             if (Array.isArray(data.ogEloLog) && data.ogEloLog.length) {
                 const log = document.getElementById('og-elo-log');
                 if (log) {
                     data.ogEloLog.forEach(function (entry) {
-                        const row = document.createElement('div');
-                        row.className = `og-log-row ${entry.cls || ''}`;
-                        row.textContent = entry.line || '';
-                        row.title = entry.title || '';
-                        log.appendChild(row);
+                        // Yeni format: tüm detail nesnesi saklanıyor
+                        // Eski format: { line, cls, title } — geriye dönük uyumluluk
+                        if (entry && typeof entry.gameNum !== 'undefined') {
+                            log.appendChild(buildLogCard(entry));
+                        } else if (entry && entry.line) {
+                            const row = document.createElement('div');
+                            row.className = `og-log-card ${entry.cls || ''}`;
+                            row.innerHTML = `<div class="og-log-top"><span class="og-log-vs">${entry.line}</span></div>`;
+                            log.appendChild(row);
+                        }
                     });
                 }
             }

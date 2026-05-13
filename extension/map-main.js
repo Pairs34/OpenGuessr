@@ -143,14 +143,104 @@
         let eloGameId     = 0;      // her yeni oyun/tur sıfırlanır; sendEloGuess stale kontrolü için
         let eloGameCount            = 0;      // tamamlanan oyun sayısı; her 3. oyunu kurban için
         let eloLastGameWasSacrifice = false;  // son oyun kurban mıydı? (scrapeGameResult için)
+        // Her oyundaki hangi turların kurban edileceği (eloGameCount değiştiğinde yeniden çekilir)
+        let eloSacrificeRounds      = new Set();
+        // showResult tur-arası poll ID — gameEnded veya location gelince iptal edilir
+        let eloShowResultPoll       = null;
+        // Nav sequence: her clickExitThenPlayAgain çağrısında artar.
+        // Stale async loop'lar bu sayı değişince otomatik çıkar.
+        let eloNavSeq = 0;
+        // Garantili kara koordinatları — tümü kıyıdan uzak iç kesim şehirleri.
+        // Kurban turunda buradan rastgele bir nokta seçilir; jitter çok küçük tutulur.
+        const LAND_POINTS = [
+            // Avrupa (iç kesim)
+            [48.85,   2.35],  // Paris
+            [52.52,  13.40],  // Berlin
+            [41.90,  12.50],  // Roma
+            [40.42,  -3.70],  // Madrid (iç kesim)
+            [50.08,  14.43],  // Prag
+            [47.50,  19.04],  // Budapeşte
+            [55.75,  37.62],  // Moskova
+            [54.68,  25.28],  // Vilnius
+            [50.45,  30.52],  // Kyiv
+            [44.80,  20.46],  // Belgrad
+            // Afrika (iç kesim)
+            [30.06,  31.25],  // Kahire
+            [-1.29,  36.82],  // Nairobi
+            [15.55,  32.53],  // Hartum
+            [-26.20, 28.04],  // Johannesburg
+            [12.37,   1.53],  // Ouagadougou — tam iç kesim
+            [9.34,    2.63],  // Parakou (Benin iç)
+            [12.36,  -1.53],  // Bobo-Dioulasso (Burkina)
+            [-15.42, 28.28],  // Lusaka (Zambia)
+            [0.31,   32.58],  // Kampala (Uganda)
+            // Asya (iç kesim)
+            [39.93, 116.39],  // Pekin
+            [28.61,  77.21],  // Yeni Delhi
+            [41.30,  69.25],  // Taşkent
+            [51.18,  71.45],  // Nur-Sultan (Kazakistan bozkırı)
+            [43.65,  51.17],  // Aktau → hayır, değiştir
+            [34.53,  69.17],  // Kabil
+            [32.07,  34.78],  // Tel Aviv → iç değil; yerine Ankara
+            [39.93,  32.85],  // Ankara (iç)
+            [35.17,  33.36],  // Lefkoşa yerine İzmir kaldır → Konya
+            [37.87,  32.48],  // Konya (iç Anadolu)
+            [24.87,  67.01],  // Lahor
+            [27.47,  89.64],  // Thimphu (Bhutan)
+            [47.90,  106.90], // Ulaanbaatar (Moğolistan bozkırı)
+            // Kuzey Amerika (iç kesim)
+            [41.88, -87.63],  // Chicago
+            [19.43, -99.13],  // Mexico City (iç)
+            [45.42, -75.70],  // Ottawa (iç)
+            [39.74,-104.98],  // Denver (iç)
+            [44.98, -93.27],  // Minneapolis (iç)
+            [35.47, -97.52],  // Oklahoma City (iç)
+            // Güney Amerika (iç kesim)
+            [-23.55, -46.63], // São Paulo
+            [-31.42, -64.18], // Córdoba (Arjantin iç)
+            [-16.50, -68.15], // La Paz (iç, yüksek ova)
+            [4.71,  -74.07],  // Bogotá (iç)
+            [-15.78, -47.93], // Brasília (iç)
+            [-17.78, -63.18], // Santa Cruz (Bolivya iç)
+            // Avustralya (iç kesim)
+            [-35.28, 149.13], // Canberra (iç)
+            [-36.76, 144.28], // Bendigo (iç)
+            [-27.56, 151.95], // Toowoomba (iç)
+            [-30.75, 121.47], // Kalgoorlie (derin iç)
+            [-23.70, 133.88], // Alice Springs (tam iç)
+        ];
+
+        function randomLandPoint() {
+            const p = LAND_POINTS[Math.floor(Math.random() * LAND_POINTS.length)];
+            // ±0.05° (~5 km) jitter — kıyıya taşmadan hafif çeşitlilik
+            const lat = p[0] + (Math.random() - 0.5) * 0.1;
+            const lon = p[1] + (Math.random() - 0.5) * 0.1;
+            return { lat, lon };
+        }
+
+        // Bir oyun için hangi turların kurban edileçeğini belirle.
+        // sacrificeRound sıfırsa hiç tur kurban edilmez.
+        function drawSacrificeRounds(totalRounds) {
+            eloSacrificeRounds = new Set();
+            const n = Math.max(0, eloSettings.sacrificeRound || 0);
+            if (n <= 0 || n >= totalRounds) return;
+            // n adet tur numarasını rastgele seç (1-bazlı)
+            const pool = Array.from({ length: totalRounds }, (_, i) => i + 1);
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+            pool.slice(0, n).forEach(r => eloSacrificeRounds.add(r));
+        }
 
         // Ayarlar (ui.js ISOLATED world'den CustomEvent ile gelir, window.* cross-world çalışmaz)
         let eloSettings = {
             thinkMinMs:      6000,
             thinkMaxMs:      10000,
-            radiusMinM:      500,
-            radiusMaxM:      2000,
+            radiusMinM:      100000,
+            radiusMaxM:      500000,
             sacrificeEvery3: false,
+            sacrificeRound:  1,
         };
 
         function applyEloSettings(detail) {
@@ -160,6 +250,7 @@
             if (typeof detail.radiusMinM      === 'number')  eloSettings.radiusMinM      = detail.radiusMinM;
             if (typeof detail.radiusMaxM      === 'number')  eloSettings.radiusMaxM      = detail.radiusMaxM;
             if (typeof detail.sacrificeEvery3 === 'boolean') eloSettings.sacrificeEvery3 = detail.sacrificeEvery3;
+            if (typeof detail.sacrificeRound  === 'number')  eloSettings.sacrificeRound  = detail.sacrificeRound;
         }
 
         function eloStatus(text) {
@@ -231,61 +322,75 @@
             return null;
         }
 
-        // Oyun bitince: önce "Exit" butonuna bas, ardından açılan popuphoulder'daki "Play again"'e bas.
-        // Eğer "Play again" popup'ı zaten açıksa (showResult handler geç kaldıysa) direkt tıkla.
+        // İnsansı gecikme yardımcısı
+        function _humanMs(min, max) {
+            return new Promise(r => setTimeout(r, min + Math.random() * (max - min)));
+        }
+
+        // Oyun bitince: Exit → Play again akışı.
+        // eloNavSeq snapshot'u ile çift çağrı ve stale loop koruması yapılır.
         async function clickExitThenPlayAgain() {
-            // 0) Play again zaten görünüyor mu? (gameEnded öncesinde popup açılmış olabilir)
-            const earlyPlayAgain = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
-            if (earlyPlayAgain) {
-                scrapeGameResult();
-                earlyPlayAgain.click();
-                eloStatus('🔁 Play again tıklandı (direkt)');
-                eloNavigating = false;
-                return;
-            }
-
-            // 1) Exit butonunu bekle ve tıkla (en fazla 20sn)
-            let exitClicked = false;
-            for (let i = 0; i < 80 && eloEnabled; i++) {
-                // Exit butonunu ara (.roundEndButton öncelikli, fallback tüm butonlar)
-                const exitBtn = findVisibleButton(/^\s*exit\s*$/i, 'button.roundEndButton, button.standardButton, button');
-                if (exitBtn) {
-                    exitBtn.click();
-                    eloStatus('🚪 Exit tıklandı');
-                    exitClicked = true;
-                    break;
+            const _mySeq = ++eloNavSeq;  // bu çağrıya özgü seq numarası
+            eloNavigating = true;
+            try {
+                // 0) Play again zaten görünüyor mu?
+                {
+                    const btn = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
+                    if (btn) {
+                        scrapeGameResult();
+                        await _humanMs(400, 900);
+                        if (eloNavSeq !== _mySeq) return;
+                        btn.click();
+                        eloStatus('🔁 Play again tıklandı (direkt)');
+                        return;
+                    }
                 }
-                // Beklerken Play again çıktı mı? (race condition fallback)
-                const racePA = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
-                if (racePA) {
-                    scrapeGameResult();
-                    racePA.click();
-                    eloStatus('🔁 Play again tıklandı (race fallback)');
-                    eloNavigating = false;
+
+                // 1) Exit butonunu bekle ve tıkla (en fazla 20sn)
+                let exitClicked = false;
+                for (let i = 0; i < 80 && eloEnabled && eloNavSeq === _mySeq; i++) {
+                    const exitBtn = findVisibleButton(/^\s*exit\s*$/i, 'button.roundEndButton, button.standardButton, button');
+                    if (exitBtn) {
+                        await _humanMs(350, 750);
+                        if (eloNavSeq !== _mySeq) return;
+                        exitBtn.click();
+                        eloStatus('🚪 Exit tıklandı');
+                        exitClicked = true;
+                        break;
+                    }
+                    const racePA = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
+                    if (racePA) {
+                        scrapeGameResult();
+                        await _humanMs(400, 900);
+                        if (eloNavSeq !== _mySeq) return;
+                        racePA.click();
+                        eloStatus('🔁 Play again tıklandı (race)');
+                        return;
+                    }
+                    await new Promise(r => setTimeout(r, 250));
+                }
+                if (!exitClicked) {
+                    eloStatus('⚠️ Exit butonu bulunamadı');
                     return;
                 }
-                await new Promise(r => setTimeout(r, 250));
-            }
-            if (!exitClicked) {
-                eloStatus('⚠️ Exit butonu bulunamadı');
-                eloNavigating = false;
-                return;
-            }
 
-            // 2) Play again butonunu bekle ve tıkla — popupHolder içindeki buton (en fazla 30sn)
-            for (let i = 0; i < 120 && eloEnabled; i++) {
-                const again = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
-                if (again) {
-                    scrapeGameResult();
-                    again.click();
-                    eloStatus('🔁 Play again tıklandı');
-                    eloNavigating = false;
-                    return;
+                // 2) Play again butonunu bekle ve tıkla (en fazla 30sn)
+                for (let i = 0; i < 120 && eloEnabled && eloNavSeq === _mySeq; i++) {
+                    const again = findVisibleButton(/play\s*again/i, 'button.bottomButton, button.standardButton, button');
+                    if (again) {
+                        scrapeGameResult();
+                        await _humanMs(450, 1000);
+                        if (eloNavSeq !== _mySeq) return;
+                        again.click();
+                        eloStatus('🔁 Play again tıklandı');
+                        return;
+                    }
+                    await new Promise(r => setTimeout(r, 250));
                 }
-                await new Promise(r => setTimeout(r, 250));
+                if (eloNavSeq === _mySeq) eloStatus('⚠️ Play again butonu bulunamadı');
+            } finally {
+                if (eloNavSeq === _mySeq) eloNavigating = false;
             }
-            eloStatus('⚠️ Play again butonu bulunamadı');
-            eloNavigating = false;
         }
 
         /* ── DOM Watcher ───────────────────────────────────────────────────
@@ -298,11 +403,10 @@
                 if (!eloEnabled) return;
 
                 // ── Matchmaking bekleme ekranı ──────────────────────────────
-                // h2.multiplayer-matchmaking-status "Waiting for players..."
                 const matchmakingH2 = document.querySelector('h2.multiplayer-matchmaking-status');
                 if (matchmakingH2 && matchmakingH2.offsetParent !== null) {
                     eloStatus('⏳ Rakip bekleniyor…');
-                    // Tur state'ini sıfırla — yeni oyun başlamak üzere (sendEloGuess iptal)
+                    eloNavSeq++;         // devam eden clickExitThenPlayAgain varsa iptal et
                     eloGameId++;
                     eloGuessing   = false;
                     eloPendingLat = null;
@@ -312,35 +416,27 @@
                     return;
                 }
 
+                // Navigasyon zaten sürüyorsa DOM'a müdahale etme
+                if (eloNavigating) return;
+
                 // ── Play again popup'ı ──────────────────────────────────────
-                // .popupHolder içindeki "Play again" butonunu doğrudan ara.
-                // offsetParent yerine getBoundingClientRect — fixed popup'lar için güvenli.
-                if (!eloNavigating) {
-                    const pa = findVisibleButton(/play\s*again/i, '.popupHolder button');
-                    if (pa) {
-                        eloNavigating = true;
-                        scrapeGameResult();
-                        pa.click();
-                        eloStatus('🔁 Play again tıklandı (DOM watcher)');
-                        return;
-                    }
+                const pa = findVisibleButton(/play\s*again/i, '.popupHolder button');
+                if (pa) {
+                    eloStatus('🔁 Play again görüldü (DOM watcher)');
+                    clickExitThenPlayAgain();  // step-0'da direkt bulur, insan gecikmesiyle tıklar
+                    return;
                 }
 
-                // ── Exit butonu (tur-sonu / oyun-sonu overlay) ──────────────
-                // Rakip tur ortasında çıkarsa veya gameEnded WS mesajı kaçarsa
-                if (!eloNavigating) {
-                    const exitBtn = findVisibleButton(/^\s*exit\s*$/i, 'button.roundEndButton, button.standardButton');
-                    if (exitBtn) {
-                        // Tur state'ini sıfırla — güvenli tahmin iptal
-                        eloGuessing   = false;
-                        eloPendingLat = null;
-                        eloPendingLon = null;
-                        eloTimerReady = false;
-                        eloNavigating = true;
-                        eloStatus('🏁 Oyun bitti — Exit tıklandı (DOM watcher)');
-                        eloRound = 0;
-                        clickExitThenPlayAgain();
-                    }
+                // ── Exit butonu (WS mesajı kaçtıysa kurtarma) ──────────────
+                const exitBtn = findVisibleButton(/^\s*exit\s*$/i, 'button.roundEndButton, button.standardButton');
+                if (exitBtn) {
+                    eloGuessing   = false;
+                    eloPendingLat = null;
+                    eloPendingLon = null;
+                    eloTimerReady = false;
+                    eloRound      = 0;
+                    eloStatus('🏁 Oyun bitti (DOM watcher)');
+                    clickExitThenPlayAgain();
                 }
 
             }, 1000);
@@ -355,9 +451,10 @@
             eloPendingLon = null;
             eloTimerReady = false;
             eloNavigating = false;
-            eloGameId++;  // tüm bekleyen async işlemleri iptal et
+            eloGameId++;
             eloRound      = 0;
-            eloGameCount  = 0;  // toggle açıldığında sayacı sıfırla
+            eloGameCount  = 0;
+            drawSacrificeRounds(5);  // ilk oyun için tur kurbanlarını çek
             if (eloEnabled) {
                 const isMatchmaking = location.pathname.includes('/multiplayer/duel');
                 eloStatus(isMatchmaking ? '⏳ Rakip bekleniyor…' : '⚔️ WS dinleniyor…');
@@ -398,12 +495,19 @@
             }
             eloRound++;
 
-            // Her 3. oyunu kurban et: tamamen rastgele uzak koordinat gönder
+            // ── Tahmin konumunu belirle ────────────────────────────────────────────────
+            // Öncelik: oyun kurbanı > tur kurbanı > normal sapma
             let gLat, gLon;
-            if (eloSettings.sacrificeEvery3 && (eloGameCount % 3 === 2)) {
-                gLat = (Math.random() * 140) - 70;
-                gLon = (Math.random() * 360) - 180;
-                eloStatus(`💀 Tur ${eloRound}: Kurban modu — Oyun #${eloGameCount + 1}`);
+            const isGameSacrifice = eloSettings.sacrificeEvery3 && (eloGameCount % 3 === 2);
+            const isRoundSacrifice = !isGameSacrifice && eloSacrificeRounds.has(eloRound);
+
+            if (isGameSacrifice || isRoundSacrifice) {
+                // Tamamen rastgele bir kara noktasına gönder
+                const pt = randomLandPoint();
+                gLat = pt.lat;
+                gLon = pt.lon;
+                const label = isGameSacrifice ? `Oyun kurbanı #${eloGameCount + 1}` : `Tur kurbanı ${eloRound}/5`;
+                eloStatus(`💀 ${label} — kara noktası`);
             } else {
                 // Sapma yarıçapı — UI'dan ayarlanabilir (min–max aralığından random, uniform daire dağılımı)
                 const _rMin    = Math.max(0, eloSettings.radiusMinM);
@@ -413,7 +517,10 @@
                 const _dist  = Math.sqrt(Math.random()) * _radiusM;
                 gLat = lat + (_dist * Math.cos(_angle)) / 111320;
                 gLon = lon + (_dist * Math.sin(_angle)) / (111320 * Math.cos(lat * Math.PI / 180));
-                eloStatus(`⏳ Tur ${eloRound}: ${gLat.toFixed(4)},${gLon.toFixed(4)} (~${Math.round(_dist)}m)`);
+                // Enlem sınırla (pole aşımı olmasın)
+                gLat = Math.max(-85, Math.min(85, gLat));
+                const _distKm = Math.round(_dist / 1000);
+                eloStatus(`⏳ Tur ${eloRound}: ~${_distKm} km sapma`);
             }
 
             // Görsel pini offset konumuna taşı (Leaflet click → Svelte app günceller)
@@ -428,6 +535,7 @@
             eloPendingLat = null;
             eloPendingLon = null;
             eloTimerReady = false;
+            eloGuessing   = false;  // güvenlik: showResult WS kaçarsa sonraki tur bloke olmasın
         }
 
         async function handleEloMsg(raw, wsSend) {
@@ -451,9 +559,12 @@
                     if (!isNaN(lat) && !isNaN(lon)) {
                         eloPendingLat = lat;
                         eloPendingLon = lon;
-                        eloGuessing   = false; // yeni tur
+                        eloGuessing   = false;  // yeni tur
                         eloTimerReady = false;
-                        eloGameId++;           // önceki bekleyen sendEloGuess varsa iptal et
+                        eloNavSeq++;            // stale clickExitThenPlayAgain loop'u iptal et
+                        eloNavigating = false;  // yeni tur = navigasyon kesinlikle bitti
+                        eloGameId++;            // önceki bekleyen sendEloGuess varsa iptal et
+                        clearInterval(eloShowResultPoll); eloShowResultPoll = null;
                         eloStatus(`📍 Lokasyon alındı, timer bekleniyor…`);
                     }
                 }
@@ -477,21 +588,24 @@
 
                 if (key === 'showResult' && value === true) {
                     eloGuessing = false; // bir sonraki tur için hazır
+                    // Önceki poll varsa temizle (güvenlik)
+                    clearInterval(eloShowResultPoll); eloShowResultPoll = null;
                     // Tur-arası sonuç overlay'ini kapat — sadece Continue/Next butonlarına bas,
                     // "Play again" butonunu ATLA (o gameEnded handler'ı tarafından işlenir).
                     if (eloEnabled) {
                         let _tries = 0;
-                        const _poll = setInterval(() => {
-                            if (!eloEnabled || _tries++ > 20) { clearInterval(_poll); return; }
+                        eloShowResultPoll = setInterval(() => {
+                            if (!eloEnabled || _tries++ > 20) { clearInterval(eloShowResultPoll); eloShowResultPoll = null; return; }
                             const _sels = ['.popupHolder button.bottomButton', '#nextRound', 'button.bottomButton'];
                             for (const _sel of _sels) {
                                 const _btn = document.querySelector(_sel);
                                 if (!_btn || _btn.offsetParent === null) continue;
-                                // Son tur popup'ındaki "Play again" butonunu burada tıklama
+                                // Son tur popup'ındaki "Play again" veya "Exit" butonlarını burada tıklama
                                 if (/play\s*again/i.test(_btn.textContent)) continue;
+                                if (/^\s*exit\s*$/i.test(_btn.textContent)) continue;
                                 _btn.click();
                                 eloStatus('▶ Continue tıklandı');
-                                clearInterval(_poll);
+                                clearInterval(eloShowResultPoll); eloShowResultPoll = null;
                                 return;
                             }
                         }, 500);
@@ -500,7 +614,11 @@
 
                 if (key === 'gameEnded' && value === true) {
                     eloLastGameWasSacrifice = eloSettings.sacrificeEvery3 && (eloGameCount % 3 === 2);
-                    eloGameCount++;  // oyun tamamlandı — sayacı artır
+                    eloGameCount++;
+                    // showResult poll'u iptal et — oyun-sonu ekranında yanlış butona basmasın
+                    clearInterval(eloShowResultPoll); eloShowResultPoll = null;
+                    // Bir sonraki oyun için yeni tur kurban seti çek
+                    drawSacrificeRounds(5);
                     eloStatus(`🏆 Oyun bitti (${eloRound} tur, toplam: ${eloGameCount}) — Exit aranıyor…`);
                     eloRound      = 0;
                     eloGuessing   = false;
